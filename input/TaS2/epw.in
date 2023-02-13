@@ -1,0 +1,75 @@
+TaS2
+&INPUTEPW
+    prefix = 'TaS2'
+    outdir = 'work/'
+    dvscf_dir = 'DFPT_20mRy'
+    cdfpt_dir = 'cDFPT_20mRy'
+    !xdfpt_dir = 'DFPT_300K'
+
+    band_plot = .true.
+    elph = .true.
+    epwwrite = .true.
+    lpolarc = .true.
+    system_2d = .true.
+    unscreen_fine = .true. ! .false.
+    use_ws = .true.
+    wannierize = .true.
+
+    asr_typ = 'none'
+
+    num_iter = 0
+    wdata(1) = 'dis_num_iter 10000'
+
+    nbndsub = 3
+    bands_skipped = 'exclude_bands = 1:12'
+    proj(1) = 'Ta: dz2; dx2-y2; dxy'
+    L = 6.8
+
+    !nbndsub = 5
+    !bands_skipped = 'exclude_bands = 1:12'
+    !proj(2) = 'Ta: dxz; dyz'
+    !L = 6.4
+
+    !nbndsub = 13
+    !bands_skipped = 'exclude_bands = 1:4'
+    !proj(3) = 'S: s; p'
+    !L = 5.4
+
+    !nbndsub = 17
+    !proj(4) = 'Ta: s; p'
+    !L = 5.3
+
+    !nbndsub = 22
+    !proj(5) = 'Ta: s:r=2'
+    !proj(6) = 'f=0.6666666667,0.8333333333,0.0: s'
+    !proj(7) = 'f=0.1666666667,0.8333333333,0.0: s'
+    !proj(8) = 'f=0.1666666667,0.3333333333,0.0: s'
+    !proj(9) = 'f=0.3333333333,0.6666666667,0.0: s'
+    !L = 5.5
+
+    !L = 3.8 ! for bare phonons
+
+    nq1 = 12, nq2 = 12, nq3 = 1
+    nk1 = 12, nk2 = 12, nk3 = 1
+
+    filqf = 'GMKG.dat'
+    nkf1 = 96, nkf2 = 96, nkf3 = 1
+
+    phlabel = 'phband'
+
+    nstemp = 2
+    temps(1) = 299.98627 ! 1.9 mRy
+    types(1) = -99 ! Fermi-Dirac
+    temps(2) = 3157.750248 ! 20 mRy
+    types(2) = -1 ! Marzari-Vanderbilt
+
+    corr = 0 ! 1, 2
+
+    !nkf1 = 2000, nkf2 = 2000, nkf3 = 1
+    !specfun_ph = .true.
+    !wmin_specfun = 0.00005 ! eV
+    !wmax_specfun = 0.04995 ! eV
+    !nw_specfun = 500
+    !degaussw = 0.002 ! eV
+    !degaussq = 0.05 ! meV
+/

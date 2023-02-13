@@ -1,11 +1,18 @@
-# Quantum ESPRESSO patch: To screen, or not to screen
+# To screen, or not to screen
 
-The data shown in "Phonon self-energy corrections: To screen, or not to screen"
-by Jan Berges, Nina Girotto, Tim Wehling, Nicola Marzari, and Samuel Poncé have
-been calculated with a modified version of the PHonon and EPW codes of Quantum
-ESPRESSO. In particular, we have introduced the inputs and outputs listed below.
+This repository contains scripts and data associated with the following paper:
 
-## Installation
+- Jan Berges, Nina Girotto, Tim Wehling, Nicola Marzari, and Samuel Poncé,
+  *Phonon self-energy corrections: To screen, or not to screen*,
+  [arXiv:2212.11806](https://arxiv.org/abs/2212.11806) (2022).
+
+## Quantum ESPRESSO patch
+
+The data shown in our paper have been calculated with a modified version of the
+PHonon and EPW codes of Quantum ESPRESSO. In particular, we have introduced the
+inputs and outputs listed below.
+
+### Installation
 
 Attached we provide a patch with the relevant modifications that can be applied
 to version 6.8 of Quantum ESPRESSO. This can either be done with Git:
@@ -24,7 +31,7 @@ Or without Git:
 
 Afterward, Quantum ESPRESSO can be installed as usual.
 
-## Changes in PHonon
+### Changes in PHonon
 
 We introduced the following inputs in `ph.x`:
 
@@ -34,12 +41,13 @@ We introduced the following inputs in `ph.x`:
     - Default `dis_froz_min` and `dis_froz_max` in EPW
     - The energy is *not* measured from the Fermi level
 - `bare`: Suppress electronic response to atomic displacements? [`false`]
+- `ibndprt`: Band index for which k = 0 vertex shall be printed
 
 A cDFPT calculation creates an additional output file:
 
 - `outdir/_ph0/prefix.phsave/cdfpt_subspace.xml`: Information passed on to EPW
 
-## Changes in EPW
+### Changes in EPW
 
 We introduced the following inputs in `epw.x`:
 
@@ -107,6 +115,32 @@ In a cDFPT calculation, `band_plot` produces several output files:
 - `phlabelren.freq`: DFPT-DFPT phonon eigenvectors for `n`th smearing
 - `phlabelcren.freq`: cDFPT-DFPT phonon eigenvectors for `n`th smearing
 
+## Figure scripts and data
+
+The directories `figXY` contain the Python scripts and data necessary to create
+all figures shown in our paper. This can be done in a virtual environment:
+
+    python3 -m venv venv
+    source venv/bin/activate
+    python3 -m pip install -r requirements.txt
+
+A LaTeX installation, preferably TeX Live, is required to typeset the figures.
+
+## Optimization of quadrupole tensors
+
+The directory `fitQ` contains a minimal working example of the optimization of
+quadrupole tensors as done in our paper. If both the patched version of Quantum
+ESPRESSO and the above Python environment are installed, simply do `./run.sh`.
+
+Note that the results obtained in this example are not converged. The parameters
+have been chosen such that the calculations can be done on a personal computer.
+
+## Quantum ESPRESSO input files
+
+The directory `input` contains the Quantum ESPRESSO input files we have used.
+Rather than a separate file for each set of parameters considered, we provide
+one generic example and indicate possible variants by comments.
+
 ## Licence
 
 This program is free software: you can redistribute it and/or modify it under
@@ -118,4 +152,4 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-Copyright (C) 2022 J. Berges, N. Girotto, T. Wehling, N. Marzari, S. Poncé
+Copyright (C) 2023 J. Berges, N. Girotto, T. Wehling, N. Marzari, S. Poncé

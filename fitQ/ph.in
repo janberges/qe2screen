@@ -1,0 +1,17 @@
+TaS2
+&INPUTPH
+    prefix = 'TaS2'
+    outdir = 'work'
+
+    fildyn = 'dyn'
+    fildvscf = 'dvscf'
+
+    tr2_ph = 1e-12 ! 1e-21
+
+    bare = .true.
+    ldisp = .true.
+
+    nq1 = 4 ! 12
+    nq2 = 4 ! 12
+    nq3 = 1
+/

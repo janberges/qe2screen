@@ -1,0 +1,4 @@
+numpy==1.24.2
+scipy==1.10.0
+elphmod==0.18
+storylines==0.10

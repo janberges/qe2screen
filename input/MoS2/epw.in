@@ -1,0 +1,41 @@
+MoS2
+&INPUTEPW
+    prefix = 'MoS2'
+    outdir = 'work/'
+    dvscf_dir = 'DFPT'
+    cdfpt_dir = 'cDFPT'
+
+    band_plot = .true.
+    elph = .true.
+    epwwrite = .true.
+    lpolarc = .true.
+    system_2d = .true.
+    unscreen_fine = .true.
+    use_ws = .true.
+    wannierize = .false.
+
+    asr_typ = 'none'
+
+    L = 3.8
+
+    nbndsub = 5
+    bands_skipped = 'exclude_bands = 1:12'
+    proj(1) = 'Mo: d'
+
+    num_iter = 0
+    wdata(1) = 'dis_num_iter 10000'
+
+    nk1 = 12, nk2 = 12, nk3 = 1
+    nq1 = 12, nq2 = 12, nq3 = 1
+
+    filqf = 'GMKG.dat'
+    nkf1 = 96, nkf2 = 96, nkf3 = 1
+
+    phlabel = 'phband'
+
+    nstemp = 2
+    temps(1) = 299.98627 ! 1.9 mRy
+    types(1) = -99 ! Fermi-Dirac
+    temps(2) = 3157.750248 ! 20 mRy
+    types(2) = -1 ! Marzari-Vanderbilt
+/
