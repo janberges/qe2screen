@@ -8,6 +8,8 @@ import storylines
 comm = elphmod.MPI.comm
 info = elphmod.MPI.info
 
+plot_coupling_in_mode_basis = True # otherwise in Cartesian basis
+
 info('Load tight-binding, mass-spring, and coupling models')
 
 el = elphmod.el.Model('TaS2')
@@ -17,7 +19,7 @@ elph.sample_orig()
 
 info('Set up q-point path')
 
-q, x, GM = elphmod.bravais.path([(0.0, 0.5 / 6e3, 0.0), (0.0, 0.5, 0.0)],
+q, x, special = elphmod.bravais.path([(0.0, 0.5 / d, 0.0) for d in [6e3, 2, 1]],
     ibrav=4, N=198)
 
 q0, x0, w0 = elphmod.el.read_bands('ref.freq')
@@ -37,7 +39,7 @@ for iq in range(len(q0)):
 D0 /= sqrtM[np.newaxis, np.newaxis, :]
 D0 /= sqrtM[np.newaxis, :, np.newaxis]
 
-d0 = np.empty((len(q0), ph.size))
+g0 = np.empty((len(q0), ph.size), dtype=complex)
 
 iq = 0
 
@@ -47,11 +49,12 @@ with open('ph0.out') as lines:
             next(lines)
 
             for i in range(ph.size):
-                d0[iq, i] = float(next(lines))
+                re, im = next(lines).split()
+                g0[iq, i] = float(re) + 1j * float(im)
 
             iq += 1
 
-d0 /= sqrtM[np.newaxis, :]
+g0 /= sqrtM[np.newaxis, :]
 
 info('Optimize long-range separation parameter')
 
@@ -72,24 +75,24 @@ info('Interpolate dynamical matrix and coupling for Q = 0')
 def sample(q):
     D = elphmod.dispersion.sample(ph.D, q)
 
-    d = elphmod.dispersion.sample(elph.g, q, elbnd=True,
+    g = elphmod.dispersion.sample(elph.g, q, elbnd=True,
         comm=elphmod.MPI.I)[:, :, 0, 0]
 
-    return D, d
+    return D, g
 
-Di, di = sample(q)
+Dd, gd = sample(q)
 
 info('Optimze quadrupole tensors')
 
 def error():
-    D, d = sample(q0)
+    D, g = sample(q0)
 
     dD = (abs(D - D0) ** 2).sum()
-    dd = (abs(abs(d) - d0) ** 2).sum()
+    dg = (abs(abs(g) - abs(g0)) ** 2).sum()
 
-    return dD, dd
+    return dD, dg
 
-dD0, dd0 = error()
+dD0, dg0 = error()
 
 def objective(Q):
     ph.Q = np.zeros((ph.nat, 3, 3, 3))
@@ -109,21 +112,21 @@ def objective(Q):
     ph.update_short_range()
     elph.update_short_range()
 
-    dD, dd = error()
+    dD, dg = error()
 
     dD /= dD0
-    dd /= dd0
+    dg /= dg0
 
     info('error(D) = %.10g%%' % (100 * dD))
-    info('error(d) = %.10g%%' % (100 * dd))
+    info('error(g) = %.10g%%' % (100 * dg))
 
-    return np.sqrt(dD ** 2 + dd ** 2)
+    return np.sqrt(dD ** 2 + dg ** 2)
 
 scipy.optimize.minimize(objective, np.ones(3), tol=1e-3)
 
 info('Interpolate dynamical matrix and coupling for optimal Q')
 
-D, d = sample(q)
+Dq, gq = sample(q)
 
 info('Plot results')
 
@@ -151,7 +154,7 @@ plot = storylines.Plot(
 
     grid=True,
 
-    xticks=[(0, r'$\Gamma$'), (x[-1] / 2, None), (x[-1], 'M')],
+    xticks=list(zip(x[special], [r'$\Gamma$', None, 'M'])),
 
     lpos='rt',
     lopt='below left=1mm',
@@ -160,22 +163,27 @@ plot = storylines.Plot(
 
 plot.width = plot.single / 2
 
-plot.ylabel = r'Diagonal of dynamical matrix (eV\textsuperscript2)'
-plot.ymin = 0.08
-plot.ymax = 0.1225
-plot.ystep = 0.01
+plot.ylabel = 'Phonon energy (meV)'
 plot.axes()
 
-for i in range(ph.size):
-    plot.line(x, Di[:, i, i].real * elphmod.misc.Ry ** 2,
+wd2, ud = np.linalg.eigh(Dd)
+wq2, uq = np.linalg.eigh(Dq)
+w02, u0 = np.linalg.eigh(D0)
+
+wd = elphmod.ph.sgnsqrt(wd2)
+wq = elphmod.ph.sgnsqrt(wq2)
+w0 = elphmod.ph.sgnsqrt(w02)
+
+for nu in range(ph.size):
+    plot.line(x, wd[:, nu] * 1e3 * elphmod.misc.Ry,
         color=mauve, thick=True, label=r'$\bm Z$')
 
-for i in range(ph.size):
-    plot.line(x, D[:, i, i].real * elphmod.misc.Ry ** 2,
+for nu in range(ph.size):
+    plot.line(x, wq[:, nu] * 1e3 * elphmod.misc.Ry,
         color=darkmauve, thick=True, label=r'$\bm Z^*, Q$')
 
-for i in range(ph.size):
-    plot.line(x0, D0[:, i, i].real * elphmod.misc.Ry ** 2, **marks)
+for nu in range(ph.size):
+    plot.line(x0, w0[:, nu] * 1e3 * elphmod.misc.Ry, **marks)
 
 plot.save('fitQa.pdf')
 
@@ -183,20 +191,27 @@ plot.clear()
 
 plot.ylabel = r'Electron-phonon coupling (eV\textsuperscript{3/2})'
 plot.ymin = 0.0
-plot.ymax = 0.65
-plot.ystep = 0.1
 plot.axes()
 
-for i in range(ph.size):
-    plot.line(x, abs(di[:, i]) * elphmod.misc.Ry ** 1.5,
+if plot_coupling_in_mode_basis:
+    gd = np.einsum('qx,qxv->qv', gd, ud)
+    gq = np.einsum('qx,qxv->qv', gq, uq)
+    g0 = np.einsum('qx,qxv->qv', g0, u0)
+
+gd = np.sort(abs(gd), axis=1)
+gq = np.sort(abs(gq), axis=1)
+g0 = np.sort(abs(g0), axis=1)
+
+for nu in range(ph.size):
+    plot.line(x, gd[:, nu] * elphmod.misc.Ry ** 1.5,
         color=orange, thick=True, label=r'$\bm Z$')
 
-for i in range(ph.size):
-    plot.line(x, abs(d[:, i]) * elphmod.misc.Ry ** 1.5,
+for nu in range(ph.size):
+    plot.line(x, gq[:, nu] * elphmod.misc.Ry ** 1.5,
         color=darkorange, thick=True, label=r'$\bm Z^*, Q$')
 
-for i in range(ph.size):
-    plot.line(x0, d0[:, i] * elphmod.misc.Ry ** 1.5, **marks)
+for nu in range(ph.size):
+    plot.line(x0, g0[:, nu] * elphmod.misc.Ry ** 1.5, **marks)
 
 plot.save('fitQb.pdf')
 

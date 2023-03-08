@@ -33,7 +33,7 @@ Afterward, Quantum ESPRESSO can be installed as usual.
 
 ### Changes in PHonon
 
-We introduced the following inputs in `ph.x`:
+We have introduced the following inputs in `ph.x`:
 
 - `cdfpt_min`: Lower bound of cDFPT active energy window in eV
 - `cdfpt_max`: Upper bound of cDFPT active energy window in eV
@@ -49,7 +49,7 @@ A cDFPT calculation creates an additional output file:
 
 ### Changes in EPW
 
-We introduced the following inputs in `epw.x`:
+We have introduced the following inputs in `epw.x`:
 
 - `cdfpt_dir`: Equivalent of `dvscf_dir` for cDFPT data
 - `xdfpt_dir`: Equivalent of `dvscf_dir` for extra DFPT data (low smearing)
@@ -72,7 +72,7 @@ We introduced the following inputs in `epw.x`:
 - `prtgkkx`: Equivalent of `prtgkk` for extra DFPT data [`false`]
 - `lpolarc`: Equivalent of `lpolar` for cDFPT data [`true`]
 - `lpolarx`: Equivalent of `lpolar` for extra DFPT data [`false`]
-- `L`: Long-range separation parameter [`0`]
+- `L`: Range-separation parameter [`0`]
 - `perp`: Take out-of-plane polarizability into account (for `L > 0`)? [`false`]
 
 Some inputs are used differently in the cDFPT case:
@@ -93,7 +93,7 @@ EPW also watches for new optional input files:
 In a cDFPT calculation, `band_plot` produces several output files:
 
 - `phlabel.freq`: DFPT phonon frequencies
-    - Custom filename stem `phlabel`
+    - Custom filename stem defined via the input `phlabel`
 - `phlabelc.freq`: cDFPT phonon frequencies
 - `phlabelx.freq`: Extra DFPT phonon frequencies
 - `phlabelr.freq`: Renormalized DFPT phonon frequencies
@@ -101,7 +101,7 @@ In a cDFPT calculation, `band_plot` produces several output files:
     - Otherwise unscreened DFPT phonon frequencies
 - `phlabelcr.freq`: Renormalized cDFPT phonon frequencies
     - Phonon frequencies at `temp_inf` if given
-    - Otherwise identical to DFPT phonon frequencies (sanity check)
+    - Otherwise equal to DFPT phonon frequencies (sanity check)
 - `phlabelrn.freq`: DFPT-DFPT phonon frequencies for `n`th smearing
 - `phlabelcrn.freq`: cDFPT-DFPT phonon frequencies for `n`th smearing
 
@@ -131,6 +131,16 @@ A LaTeX installation, preferably TeX Live, is required to typeset the figures.
 The directory `fitQ` contains a minimal working example of the optimization of
 quadrupole tensors as done in our paper. If both the patched version of Quantum
 ESPRESSO and the above Python environment are installed, simply do `./run.sh`.
+
+More precisely, we first calculate (bare) dynamical matrices and electron-phonon
+matrix elements both on a coarse q mesh and for selected q points along a path.
+Then we Fourier-interpolate the former, minimizing deviations from the latter.
+Here, the free parameters are the independent elements of the quadrupole tensors
+Q and the range-separation parameter L entering the formulas for the long-range
+components which are subtracted and added before and after interpolation. First,
+we optimize L for Q = 0, minimizing the short-range part of the force constants.
+Second, we optimize Q for constant L. A simultaneous optimization would also be
+possible, but it is only important that L is in the correct range.
 
 Note that the results obtained in this example are not converged. The parameters
 have been chosen such that the calculations can be done on a personal computer.
