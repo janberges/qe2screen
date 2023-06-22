@@ -6,77 +6,141 @@ import numpy as np
 
 comm = elphmod.MPI.comm
 
-labels = 'ab'
-
-cmap = storylines.colormap(
-    (0.00, storylines.Color(255, 255, 255)),
-    (0.05, storylines.Color(94, 60, 153)),
-    (0.10, storylines.Color(230, 97, 1)),
-    (1.00, storylines.Color(241, 163, 64)))
-
+Margin = 0.96
 margin = 0.12
 
-#q, x, A0 = elphmod.el.read_bands('phband0rw1.freq')
-#q, x, Ad = elphmod.el.read_bands('phbanddrw1.freq')
+white = storylines.Color(255, 255, 255)
+orange = storylines.Color(241, 163, 64)
+mauve = storylines.Color(153, 142, 195)
+darkorange = storylines.Color(230, 97, 1)
+darkmauve = storylines.Color(94, 60, 153)
+
+cmap_negative = storylines.colormap(
+    (0.0, darkmauve),
+    (0.5, mauve),
+    (1.0, white))
+
+cmap_positive = storylines.colormap(
+    (0.0, white),
+    (0.5, orange),
+    (1.0, darkorange))
+
+cmap = storylines.colormap(
+    (0.00, darkmauve),
+    (0.25, mauve),
+    (0.50, white),
+    (0.75, orange),
+    (1.00, darkorange))
+
+labels = 'abcd'
+
+#for label in '0r', 'zr', '0cr', 'zcr', 'nol0cr', 'nolzcr', 'dr':
+#    qA, xA, A = elphmod.el.read_bands('phband%sw1.freq' % label)
 #
-#minimum = min(A0.min(), Ad.min())
+#    A *= 2 / (1e3 * elphmod.misc.Ry) ** 2 # correct units from old data
+#    A = A[::-1]
 #
-#lgA0 = np.log10(A0 / minimum)
-#lgAd = np.log10(Ad / minimum)
+#    if not 'z' in label:
+#        elphmod.el.write_bands('phband%sw1.dat' % label, qA,
+#            50 * A.sum(axis=0, keepdims=True) / A.shape[0])
 #
-#orders = max(lgA0.max(), lgAd.max())
+#    if label in {'0cr', 'zcr'}:
+#        A += 1
+#        A /= 2
 #
-#if comm.rank == 0:
-#    storylines.save('phband0rw1.png', lgA0[::-1, :, None] * 255 / orders)
-#    storylines.save('phbanddrw1.png', lgAd[::-1, :, None] * 255 / orders)
+#    A = np.round(255 * np.minimum(np.maximum(A, 0), 1))
 #
-#elphmod.MPI.info(orders)
+#    storylines.save('phband%sw1.png' % label, A[:, :, None])
 
-orders = 8.678954153853722
+A = dict()
+integral = dict()
+xw = dict()
+w = dict()
 
-q0, x0, w0 = elphmod.el.read_bands('phband0r1.freq')
-qd, xd, wd = elphmod.el.read_bands('phbanddr1.freq')
+for label in '0r', 'zr', '0cr', 'zcr', 'nol0cr', 'nolzcr', 'dr':
+    qw, xw[label], w[label] = elphmod.el.read_bands('phband%s1.freq' % label)
 
-A0 = 10 ** (np.array(storylines.load('phband0rw1.png'))[:, :, 0] * orders / 255)
-Ad = 10 ** (np.array(storylines.load('phbanddrw1.png'))[:, :, 0] * orders / 255)
+    A[label] = np.array(storylines.load('phband%sw1.png' % label))[:, :, 0]
 
-maximum = max(A0.max(), Ad.max())
+    if not 'z' in label:
+        integral[label] = elphmod.el.read_bands('phband%sw1.dat' % label)[-1][0]
 
-q, x, GMKG = elphmod.bravais.path('GMKG', ibrav=4)
+q, x, corners = elphmod.bravais.path('GMKG', ibrav=4)
+qz, xz, cornerz = elphmod.bravais.path('KGM', ibrav=4)
+qz /= 15
+xz /= 15
 
-for n, (w, A, title) in enumerate([
-        (w0, A0, 'No doping'),
-        (wd, Ad, 'Van Hove filling')]):
+for n, (label, zoom, title) in enumerate([
+        ('0r', 'zr', r'via $\varPi^{\text{00}}$'),
+        ('0cr', 'zcr', r'via $\varPi^{\text{p0}}$'),
+        ('nol0cr', 'nolzcr', r'via $\varPi^{\text{p0}}$ '
+            r'\smash{(no\,$\mathcal L$)}'),
+        ('dr', None, r'via $\varPi^{\text{00}}$ \smash{(doped)}')]):
 
-    image = elphmod.plot.color(A, minimum=0.0, maximum=maximum, cmap=cmap)
+    image = elphmod.plot.color(A[label], minimum=0, maximum=255,
+        cmap=cmap if label == '0cr' else cmap_positive)
+
+    if zoom is not None:
+        inset = elphmod.plot.color(A[zoom], minimum=0, maximum=255,
+            cmap=cmap if label == '0cr' else cmap_positive)
 
     if comm.rank == 0:
-        storylines.save('fig07%s.png' % labels[n], image)
+        if zoom is not None:
+            plot = storylines.Plot(
+                style='APS',
+                preamble=r'\usepackage{mathtools}',
+
+                width=-1.3,
+                height=-1.3,
+
+                left=0.5,
+                right=0.2,
+                bottom=0.55,
+                top=0.2,
+
+                xticks=list(zip(xz[cornerz], [
+                    r'$\smash{\mathllap{\frac 1 {15}}}\mathrm K$',
+                    r'$\Gamma$',
+                    r'$\smash{\mathllap{\frac 1 {15}}}\mathrm M$',
+                    ])),
+
+                ymin=25.0,
+                ymax=50.0,
+                ystep=10.0,
+
+                background='fig07%s.in.png' % labels[n],
+                )
+
+            for nu in range(w[zoom].shape[0]):
+                plot.line(xw[zoom], w[zoom][nu], cut=True)
+
+            storylines.save(plot.background, inset)
+
+            plot.save('fig07%s.in.pdf' % labels[n])
 
         plot = storylines.Plot(
             style='APS',
-            preamble=r'\usepackage{mathtools}',
 
             title='\smash{(%s)} %s' % (labels[n], title),
 
-            left=0.9,
-            right=0.8,
-            bottom=0.4,
-            top=0.4,
+            left=Margin,
+            right=Margin,
+            bottom=margin,
+            top=Margin / 2,
 
-            xticks=zip(x[GMKG], [
+            xticks=list(zip(x[corners], [
                 r'$\Gamma$',
                 r'$\mathrm M$',
                 r'$\mathrm K$',
                 r'$\Gamma$',
-                ]),
+                ])),
+            xlabels=False,
 
             ylabel='Phonon energy (meV)',
             yformat=lambda y: '$%g\,\mathrm i$' % abs(y)
                 if y < 0 else '$%g$' % y,
 
-            zlabel='Spectral function',
-            zticks=[0, (1, r'\llap{max}')],
+            zlabel='Phonon spectral function (1/meV)',
             zclose=True,
 
             ymin=-25.0,
@@ -84,40 +148,72 @@ for n, (w, A, title) in enumerate([
             ystep=10.0,
             zmin=0.0,
             zmax=1.0,
+            zstep=1.0,
 
-            cmap=cmap,
+            cmap=cmap_positive,
 
-            lpos='br',
-            lopt='above left=1mm, inner ysep=3pt, rounded corners=1pt, '
-                'draw=lightgray, fill=white',
+            lpos='bl',
+            lopt='above right=1mm',
             )
 
-        plot.width = (plot.left + plot.right + 2 * margin - plot.single) / 2
-        plot.height = plot.width * (plot.ymax - plot.ymin) / plot.ymax
+        plot.width = (2 * Margin + 6 * margin - plot.double) / 4
+        plot.height = (Margin + 2 * margin - plot.single) * 0.9
 
-        plot.image('fig07%s.png' % labels[n], 0, 0, x[-1], 50.0)
+        plot.image('fig07%s.png' % labels[n], 0.0, 0.0, x[-1], 50.0)
 
-        plot.axes()
+        plot.line(y=0, color='lightgray')
 
-        for point in x[GMKG[1:-1]]:
-            plot.line(x=point, color='gray')
+        for nu in range(w[label].shape[0]):
+            plot.line(xw[label], w[label][nu], cut=True,
+                label=None if n < 3 else r'$\omega = 0$')
 
-        plot.line(y=0, color='gray')
-
-        for nu in range(w.shape[0]):
-            plot.line(x0, w[nu], cut=True, label=None if n else r'$\omega = 0$')
-
-        if n == 0:
+        if n < 3:
             plot.colorbar = False
             plot.right = margin
-        else:
+
+        if n > 0:
             plot.ylabel = None
-            plot.ymarks = False
+            plot.ylabels = False
             plot.left = margin
+
+        if zoom is not None:
+            plot.node(x[-1], plot.ymin, r'\includegraphics{fig07%s.in.pdf}'
+                % labels[n], above_left=True)
+
+        storylines.save('fig07%s.png' % labels[n], image)
 
         plot.save('fig07%s.pdf' % labels[n])
 
-if comm.rank == 0:
-    print('Height: %g cm (for adjacent Fig. 6)' % plot.height)
+        plot.clear()
 
-    storylines.combine('fig07.pdf', ['fig07%s' % a for a in labels])
+        plot.height = (Margin + 2 * margin - plot.single) * 0.1
+
+        plot.title = None
+        plot.bottom = Margin / 2
+        plot.top = margin
+
+        plot.xlabels = True
+
+        if n == 0:
+            plot.ylabel = 'Integral'
+
+        plot.ymax = 9.5
+        plot.ymin = 3.0
+        plot.ystep = 3.0
+
+        plot.cmap = cmap_negative
+        plot.zmin = -1.0
+        plot.zmax = 0.0
+        plot.zticks = [-1]
+        plot.zlabel = None
+
+        for y in 8.0, 9.0:
+            plot.line(y=y, color='lightgray')
+
+        plot.line(xw[label], integral[label], color=darkorange, cut=True)
+
+        plot.save('fig07%s.b.pdf' % labels[n])
+
+if comm.rank == 0:
+    storylines.combine('fig07.pdf', ['fig07%s%s' % (a, b)
+        for b in ['', '.b'] for a in labels], columns=4)

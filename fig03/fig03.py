@@ -6,26 +6,25 @@ import storylines
 
 comm = elphmod.MPI.comm
 
-labels = 'abcdefghij'
-
-style = dict(cut=True, line_cap='butt', line_join='miter')
-
-Margin = 0.9
+height = 11.0 + 2.0 / 3.0
+Margin = 0.96
 margin = 0.12
 
 orange = storylines.Color(241, 163, 64)
 mauve = storylines.Color(153, 142, 195)
-darkorange = storylines.Color(230, 97, 1)
-darkmauve = storylines.Color(94, 60, 153)
+
+style = dict(cut=True, line_cap='butt', line_join='miter')
+
+labels = 'abcdefghij'
 
 nbnd = [1, 5, 13, 17, 22]
 
-orbitals = [r'Ta-$d_{0, \pm 2}$', r'$+$\,Ta-$d$', r'$+$\,S-$s{,}p$',
-    r'$+$\,Ta-$s{,}p$', r'$+$\,MLWF']
+orbitals = [r'Ta-$d_{z^2, x^2 - y^2, x y}$', r'$+$\,Ta-$d_{x z, y z}$',
+    r'$+$\,S-$s{,}p$', r'$+$\,Ta-$s{,}p$', r'$+$\,MLWF']
 
 mu = -5.8726
 
-k, x, GMKG = elphmod.bravais.path('GMKG', ibrav=4)
+k, x, corners = elphmod.bravais.path('GMKG', ibrav=4)
 
 k0, x0, e0 = elphmod.el.read_bands('bands.dat')
 e0 -= mu
@@ -48,20 +47,19 @@ for i, n in enumerate(nbnd):
     plot = storylines.Plot(
         style='APS',
 
-        height=5.0,
-
-        margin=margin,
         left=Margin,
-        top=0.4,
+        right=margin,
+        bottom=margin,
+        top=Margin / 2,
 
         title=r'%d band' % n,
 
-        ymax=11.0,
+        ymax=12.0,
+        ymin=-70.0,
         ystep=15.0,
-        ypadding=1.0,
 
-        xticks=x[GMKG],
-        xmarks=False,
+        xticks=x[corners],
+        xlabels=False,
 
         ylabel='Electron energy (eV)',
         )
@@ -69,26 +67,31 @@ for i, n in enumerate(nbnd):
     if i != 0:
         plot.left = margin
         plot.ylabel = None
-        plot.ymarks = False
+        plot.ylabels = False
 
     if n != 1:
         plot.title += 's'
 
-    plot.width = (Margin + margin * (2 * len(nbnd) - 1)
-        - plot.single) / len(nbnd)
+    plot.width = (Margin + (2 * len(nbnd) - 1) * margin
+        - plot.double) / len(nbnd)
+    plot.height = (Margin + 2 * margin - height) / 2
 
-    plot.line(grid=True)
+    plot.line(y=0.0, color='lightgray')
 
     for m in range(len(e0)):
         plot.line(x0, e0[m], color='lightgray', **style)
 
-    for m in range(1 if len(ew) == 3 else len(ew)):
+    for m in range(n):
         plot.line(xw, ew[m], color=mauve, thick=True, **style)
 
-    plot.node((x[0] + x[-1]) / 2, -52.5, orbitals[i], inner_sep='2pt',
-        rounded_corners='1pt', draw='lightgray', fill='white')
+    if n == 1:
+        for m in range(1, 3):
+            plot.line(xw, ew[m], color=orange, **style)
 
-    plot.node((x[GMKG[0]] + x[GMKG[1]]) / 2, -20.0, '(%s)' % labels[i])
+    plot.node((x[0] + x[-1]) / 2, (e0[0, 0] + e0[1, 0]) / 2, orbitals[i])
+
+    plot.node(x[0], plot.ymax, '(%s)' % labels[i], below_right='0.5mm',
+        inner_sep='1pt', rounded_corners=True, fill='white')
 
     plot.save('fig03%s.pdf' % labels[i])
 
@@ -105,35 +108,36 @@ for i, n in enumerate(nbnd):
     plot = storylines.Plot(
         style='APS',
 
-        height=5.0,
-
-        margin=margin,
         left=Margin,
-        bottom=0.4,
+        right=margin,
+        bottom=Margin / 2,
+        top=margin,
 
         ymin=0.0,
         ymax=174.0,
         ystep=25.0,
 
-        xticks=zip(x[GMKG], [
+        xticks=list(zip(x[corners], [
             r'$\Gamma$',
             r'$\mathrm M$',
             r'$\mathrm K$',
             r'$\Gamma$',
-            ]),
+            ])),
 
         ylabel='Phonon energy (meV)',
+
+        lpos='cmt',
+        llen='4mm',
         )
 
-    plot.width = (Margin + margin * (2 * len(nbnd) - 1)
-        - plot.single) / len(nbnd)
-
-    plot.line(grid=True)
+    plot.width = (Margin + (2 * len(nbnd) - 1) * margin
+        - plot.double) / len(nbnd)
+    plot.height = (Margin + 2 * margin - height) / 2
 
     if i != 0:
         plot.left = margin
         plot.ylabel = None
-        plot.ymarks = False
+        plot.ylabels = False
 
     for nu in range(len(w0)):
         plot.line(x0, w0[nu], thick=True, color=orange, **style)
@@ -149,44 +153,20 @@ for i, n in enumerate(nbnd):
         plot.line(xu, wu[nu], thick=False, color=orange,
             dash_pattern='on 0.5mm off 0.2mm', **style)
 
-    plot.node((x[GMKG[0]] + x[GMKG[1]]) / 2, 165.0,
-        '(%s)' % labels[len(nbnd) + i])
+    if i == 0:
+        plot.line(thick=True, color=orange, label='DFPT', **style)
+        plot.line(thick=False, color=mauve, label='cDFPT', **style)
+        plot.line(thick=True, color=mauve, dash_pattern='on 0.8mm off 0.8mm',
+            label=r'cDFPT+$\varPi^{\text{p0}}$', **style)
+        plot.line(thick=False, color=orange, dash_pattern='on 0.5mm off 0.2mm',
+            label=r'DFPT\textminus$\varPi^{\text{00}}$', **style)
+
+    plot.node(x[0], plot.ymax, '(%s)' % labels[len(nbnd) + i],
+        below_right='0.5mm', inner_sep='1pt', rounded_corners=True,
+        fill='white')
 
     plot.save('fig03%s.pdf' % labels[len(nbnd) + i])
 
-if comm.rank != 0:
-    raise SystemExit
-
-storylines.combine('fig03.bg.pdf', ['fig03' + a for a in labels],
-    columns=len(nbnd))
-
-lx = 1.5 * plot.width - margin + Margin
-ly = plot.bottom + (plot.height - plot.bottom - plot.top) * (112.5 / plot.ymax)
-
-plot = storylines.Plot(
-    style='APS',
-
-    width=plot.single,
-    height=2 * plot.height,
-
-    margin=0.0,
-    xyaxes=False,
-
-    background='fig03.bg.pdf',
-
-    lpos='BL',
-    lcol=2,
-    llen='4mm',
-    lwid=4,
-    lopt='xshift=%gcm, yshift=%gcm, inner ysep=3pt, rounded corners=1pt, '
-        'draw=lightgray,  fill=white' % (lx, ly),
-    )
-
-plot.line(thick=False, color=mauve, label='cDFPT', **style)
-plot.line(thick=True, color=orange, label='DFPT', **style)
-plot.line(thick=False, color=orange, dash_pattern='on 0.5mm off 0.2mm',
-    label=r'DFPT\textminus$\varPi^{\text{00}}$', **style)
-plot.line(thick=True, color=mauve, dash_pattern='on 0.8mm off 0.8mm',
-    label=r'cDFPT+$\varPi^{\text{\rlap{p0}}}$', **style)
-
-plot.save('fig03.pdf')
+if comm.rank == 0:
+    storylines.combine('fig03.pdf', ['fig03' + a for a in labels],
+        columns=len(nbnd))

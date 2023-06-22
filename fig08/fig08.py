@@ -6,6 +6,7 @@ import storylines
 
 comm = elphmod.MPI.comm
 
+Margin = 0.96
 margin = 0.12
 
 orange = storylines.Color(241, 163, 64)
@@ -15,7 +16,7 @@ darkmauve = storylines.Color(94, 60, 153)
 
 K = np.array([-2.0 / 3.0, 1.0 / 3.0, 0.0])
 
-k, x, GMKG = elphmod.bravais.path([n * K / 4 for n in [5, 4, 2, 1]],
+k, x, corners = elphmod.bravais.path([n * K / 4 for n in [5, 4, 2, 1]],
     ibrav=4, N=198)
 
 #a = elphmod.bravais.primitives(ibrav=4)
@@ -49,7 +50,7 @@ k0, x0, (g0,) = elphmod.el.read_bands('coupling0.dat')
 kp, xp, (gp,) = elphmod.el.read_bands('couplingp.dat')
 
 for l, (label, ylabel, ymin, ymax, ystep) in enumerate([
-        ('a', r'Electron energy (eV)', -0.17, 0.43, 0.1),
+        ('a', r'Electron energy (eV)', -0.17, 0.37, 0.1),
         ('c', r'El.-ph.\@ coupling (eV$^{3/2}$)', 0.0, 0.033, 0.01)]):
 
     if comm.rank != 0:
@@ -57,54 +58,51 @@ for l, (label, ylabel, ymin, ymax, ystep) in enumerate([
 
     plot = storylines.Plot(
         style='APS',
-        preamble=r'\usepackage{mathtools}',
+        preamble=r'\usepackage{mathtools, nicefrac}',
 
         label=label,
 
         margin=margin,
-        left=1.0,
-        bottom=0.55,
-
-        grid=True,
+        left=Margin,
+        bottom=Margin / 2,
 
         ymin=ymin,
         ymax=ymax,
         ystep=ystep,
 
-        xticks=zip(x[GMKG], [
-            r'$\mathllap{\smash{\frac 5 4}} \mathrm K$',
+        xticks=list(zip(x[corners], [
+            r'$\mathllap{\smash{\nicefrac 5 4}}\,\mathrm K$',
             r'$\mathrm K$',
-            r'$\mathllap{\smash{\frac 1 2} \mathrm K = {}} \mathrm Q$',
-            r'$\mathllap{\smash{\frac 1 4}} \mathrm K$',
-            ]),
+            r'$\mathllap{\smash{\nicefrac 1 2}\,\mathrm K = {}} \mathrm Q$',
+            r'$\mathllap{\smash{\nicefrac 1 4}}\,\mathrm K$',
+            ])),
 
         ylabel=ylabel,
 
-        lpos='c' + ('b' * 23 + 't' * 10),
-        lopt='inner ysep=3pt, rounded corners=1pt, draw=lightgray, fill=white',
+        lpos=(x[-1] / 2, 0.01),
         )
 
-    plot.width = (2.0 + 2 * margin - plot.single) / 2
-    plot.height = 1.2 * plot.width
-
-    plot.line(grid=True)
+    plot.width = (2 * Margin + 2 * margin - plot.single) / 2
+    plot.height = (Margin / 2 + 3 * margin - plot.single) / 2
 
     if l == 0:
         plot.bottom = margin
-        plot.xmarks = False
+        plot.xlabels = False
+
+        plot.line(y=0.0, color='lightgray')
 
         plot.line(xe[::-1], e, color='gray', densely_dashed=True, cut=True)
         plot.fatband(xe, e, thickness=0.05, fill=mauve, protrusion=1, cut=True)
         plot.fatband(xe, e, thickness=0.05, fill=darkmauve,
             cut=(None, None, None, 0))
 
-        c = (x[GMKG[2]] + x[GMKG[1]]) / 2
-        d = (x[GMKG[2]] - x[GMKG[1]]) / 2 * 0.88
+        c = (x[corners[2]] + x[corners[1]]) / 2
+        d = (x[corners[2]] - x[corners[1]]) / 2 * 0.85
 
         plot.code(r'\draw[<->, thick] '
             r'(<x=%g>, <y=-0.1>) '
             r'to node[below, align=center] '
-            r'{$\boldsymbol k\!\leftrightarrow\!\boldsymbol k\!+\!\mathrm M$} '
+            r'{$\mathbf k\!\leftrightarrow\!\mathbf k\!+\!\mathrm M$} '
             r'(<x=%g>, <y=-0.1>);' % (c - d, c + d))
     else:
         for y, label, color in (g0, 'DFPT', orange), (gp, 'cDFPT', darkorange):
@@ -113,11 +111,11 @@ for l, (label, ylabel, ymin, ymax, ystep) in enumerate([
 
             plot.line(label=label, color=color, line_width='0.3mm')
 
-        plot.ltop = r'$\boldsymbol q = \mathrm M$'
+        plot.ltop = r'$\mathbf q = \mathrm M$'
 
     plot.save('fig08%s.pdf' % plot.label)
 
-q, x, GMKG = elphmod.bravais.path('GMKG', ibrav=4, N=198)
+q, x, corners = elphmod.bravais.path('GMKG', ibrav=4, N=198)
 
 q0, x0, w0 = elphmod.el.read_bands('ref.freq')
 
@@ -140,41 +138,38 @@ for l, label in enumerate('bd'):
         label=label,
 
         margin=margin,
-        left=1.0,
-        bottom=0.55,
-
-        grid=True,
+        left=Margin,
+        bottom=Margin / 2,
 
         ymin=0,
-        ymax=90,
-        ystep=15,
+        ymax=80,
+        ystep=20,
 
         dtop=2 * margin,
 
-        xticks=zip(x[GMKG], [
+        xticks=list(zip(x[corners], [
             r'$\Gamma$',
             r'$\mathrm M$',
             r'$\mathrm K$',
             r'$\Gamma$',
-            ]),
+            ])),
 
         yformat=lambda y: '$%g\,\mathrm i$' % abs(y) if y < 0 else '$%g$' % y,
 
         ylabel='Phonon energy (meV)',
 
         lpos='rt',
-        lopt='below left=1mm, rounded corners=1pt, inner ysep=2pt, '
-            'draw=lightgray, fill=white',
+        lcol=2 if l == 0 else 1,
+        lwid=2.8,
+        lopt='below left',
         )
 
-    plot.width = (2.0 + 2 * margin - plot.single) / 2
-    plot.height = 1.2 * plot.width
-
-    plot.line(grid=True)
+    plot.width = (2 * Margin + 2 * margin - plot.single) / 2
+    plot.height = (Margin / 2 + 3 * margin - plot.single) / 2
 
     if l == 0:
         plot.bottom = margin
-        plot.xmarks = False
+        plot.xlabels = False
 
         style = dict(line_cap='butt', line_join='miter')
 
@@ -192,12 +187,12 @@ for l, label in enumerate('bd'):
             plot.line(xu, wu[nu], thick=False, color=orange,
                 dash_pattern='on 0.5mm off 0.2mm', **style)
 
-        plot.line(thick=True, color=orange, label='DFPT', **style)
-        plot.line(thick=False, color=mauve, label='cDFPT', **style)
+        plot.line(thick=True, color=orange, label='$D$', **style)
+        plot.line(thick=False, color=mauve, label=r'$D^{\text p}$', **style)
         plot.line(thick=False, color=orange, dash_pattern='on 0.5mm off 0.2mm',
-            label=r'DFPT\textminus$\varPi^{\text{00}}$', **style)
+            label=r'$D^{\text u}$', **style)
         plot.line(thick=True, color=mauve, dash_pattern='on 0.8mm off 0.8mm',
-            label=r'cDFPT+$\varPi^{\text{\rlap{p0}}}$', **style)
+            label=r'$D^{\text p} {+} \varPi^{\text{p0}}$', **style)
     else:
         for nu in range(len(w1)):
             plot.line(x1, w1[nu], thick=True, color=orange, cut=True,

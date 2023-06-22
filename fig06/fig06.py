@@ -3,14 +3,16 @@
 import elphmod
 import storylines
 
-nbnd = [1, 5, 13, 17]
+Margin = 0.96
+margin = 0.12
 
 orange = storylines.Color(241, 163, 64)
 mauve = storylines.Color(153, 142, 195)
 darkorange = storylines.Color(230, 97, 1)
-darkmauve = storylines.Color(94, 60, 153)
 
-q, x, GMKG = elphmod.bravais.path('GMKG', ibrav=4)
+nbnd = [1, 5, 13, 17]
+
+q, x, corners = elphmod.bravais.path('GMKG', ibrav=4)
 
 q0, x0, w0 = elphmod.el.read_bands('../fig05/ref.freq')
 
@@ -26,13 +28,11 @@ if elphmod.MPI.comm.rank != 0:
 plot = storylines.Plot(
     style='APS',
 
-    width=5,
-    height=2.5,
+    width=5.0,
+    height=3.2,
 
     margin=0.0,
     xyaxes=False,
-
-    grid=True,
 
     xmin=0.17 * x[-1],
     xmax=0.43 * x[-1],
@@ -40,7 +40,7 @@ plot = storylines.Plot(
     ymax=-3.5,
     ystep=10.0,
 
-    xticks=list(zip(x[GMKG], [
+    xticks=list(zip(x[corners], [
         r'$\Gamma$',
         r'$\mathrm M$',
         r'$\mathrm K$',
@@ -49,12 +49,10 @@ plot = storylines.Plot(
 
     ylabel='Phonon energy (meV)',
 
-    lpos='bcr',
+    lpos=(2 * x[-1] / 3, -7.0),
     llen='4mm',
     lput=False,
     lwid=3,
-    lopt='above=2mm, inner ysep=3pt, rounded corners=1pt, '
-        'draw=lightgray, fill=white',
 
     yformat=lambda y: '$%g\,\mathrm i$' % abs(y) if y < 0 else '$%g$' % y,
 
@@ -82,17 +80,17 @@ for nu in range(len(w0)):
 
 plot.save('fig06.in.pdf')
 
-plot.code(r'\draw [gray, thick, rounded corners=1pt] '
+plot.code(r'\draw [lightgray, rounded corners=1pt] '
     '(<x=%g>, <y=%g>) rectangle (<x=%g>, <y=%g>);'
         % (plot.xmin, plot.ymin, plot.xmax, plot.ymax), zindex=1)
 
 width = plot.single
-height = 5.795
+height = width
 
-left = 0.9
-right = 0.12
-bottom = 0.4
-top = 0.4
+left = Margin
+right = margin
+bottom = Margin / 2
+top = margin
 
 xscale = (plot.xmax - plot.xmin) / plot.width
 yscale = (plot.ymax - plot.ymin) / plot.height
@@ -116,11 +114,12 @@ plot.top = top
 plot.xaxis = True
 plot.yaxis = True
 plot.frame = True
-
 plot.lput = True
 
-plot.node((x[0] + x[-1]) / 2, plot.ymax + yscale_new * top,
-    r'\includegraphics{fig06.in.pdf}', below=True, inner_sep='0pt',
-    rounded_corners='1pt', draw='gray', fill='white', thick=True)
+plot.node(x[-1], plot.ymax,
+    r'\includegraphics{fig06.in.pdf}', below_left='2mm', inner_sep='0pt',
+    rounded_corners='1pt', draw='lightgray', fill='white')
+
+plot.line(y=0.0, color='lightgray', zindex=0)
 
 plot.save('fig06.pdf')

@@ -7,7 +7,7 @@ import storylines
 
 comm = elphmod.MPI.comm
 
-Margin = 0.95
+Margin = 0.96
 margin = 0.12
 
 orange = storylines.Color(241, 163, 64)
@@ -36,12 +36,10 @@ if comm.rank == 0:
 
         margin=margin,
         left=Margin,
-        bottom=0.4,
+        bottom=Margin / 2,
 
-        grid=True,
-
-        ymin=280,
-        ymax=2820 - ybreak,
+        ymin=280.0,
+        ymax=2820.0 - ybreak,
 
         xticks=list(zip(x, [
             r'$\mathrm K$',
@@ -55,17 +53,16 @@ if comm.rank == 0:
 
         lpos='cm',
         llen='4mm',
-        lopt='inner ysep=3pt, rounded corners=1pt, draw=lightgray, fill=white',
 
-        ylabel='Phonon energy (meV)',
+        ylabel='Bare phonon energy (meV)',
 
         resolution=1e-4,
         )
 
     plot.yticks = [y if y < ylower else (y - ybreak, y) for y in plot.yticks]
 
-    plot.width = plot.single / 2
-    plot.height = 8.0
+    plot.width = plot.double / 3
+    plot.height = plot.single
 
     plot.cut(y=ylower)
 
@@ -104,7 +101,7 @@ for i, n in enumerate(nel):
 if comm.rank == 0:
     inset = copy.deepcopy(plot)
 
-    inset.width = 2.8
+    inset.width = 4.0
 
     inset.left = 0.0
     inset.right = 0.0
@@ -127,7 +124,7 @@ if comm.rank == 0:
         / (plot.ymax - plot.ymin) * (plot.height - plot.bottom - plot.top))
 
     inset.lpos = 'rb'
-    inset.lopt = 'above left=-1mm'
+    inset.lopt = 'above left'
 
     inset.line(color=colors[1][0], label=r'long\rlap.',
         line_width='%gcm' % (factor * thickness))
@@ -148,13 +145,12 @@ if comm.rank == 0:
 
     inset.save('fig10a.in.pdf')
 
-    plot.code(r'\draw [gray, thick, rounded corners=1pt] '
+    plot.code(r'\draw [lightgray, ounded corners=1pt] '
         '(<x=%g>, <y=%g>) rectangle (<x=%g>, <y=%g>);'
             % (inset.xmin, inset.ymin, inset.xmax, inset.ymax))
 
     plot.node((x[-1] + x[0]) / 2, 384, r'\includegraphics{fig10a.in.pdf}',
-        inner_sep='0.4pt', rounded_corners='1pt', draw='gray', fill='white',
-        thick=True)
+        inner_sep='0.2pt', rounded_corners='1pt', draw='lightgray')
 
     plot.save('fig10a.pdf')
 
@@ -166,29 +162,27 @@ if comm.rank == 0:
 
         margin=margin,
         left=Margin,
-        bottom=0.4,
-
-        grid=True,
+        bottom=Margin / 2,
 
         ymin=0.0,
         ymax=2.25,
         ystep=0.5,
 
-        xticks=zip(x, [
+        xticks=list(zip(x, [
             r'$\mathrm K$',
             None, None, None,
             r'$\Gamma$',
             None, None, None, None, None,
             r'$\mathrm M\,$',
-            ]),
+            ])),
 
         ylabel=r'Electron-phonon coupling (eV\textsuperscript{3/2})',
 
         resolution=1e-4,
         )
 
-    plot.width = plot.single / 2
-    plot.height = 8.0
+    plot.width = plot.double / 3
+    plot.height = plot.single
 
     plot.axes()
 
@@ -220,7 +214,7 @@ for i, n in enumerate(nel):
 if comm.rank == 0:
     inset = copy.deepcopy(plot)
 
-    inset.width = 1.5
+    inset.width = 2.0
 
     inset.left = 0
     inset.right = 0
@@ -255,21 +249,21 @@ if comm.rank == 0:
 
     inset.save('fig10b.in.pdf')
 
-    plot.code(r'\draw [gray, thick, rounded corners=1pt] '
+    plot.code(r'\draw [lightgray, rounded corners=1pt] '
         '(<x=%g>, <y=%g>) rectangle (<x=%g>, <y=%g>);'
             % (inset.xmin, inset.ymin, inset.xmax, inset.ymax))
 
     plot.node(x[0], plot.ymax, r'\includegraphics{fig10b.in.pdf}',
-        below_right='0.8mm', inner_sep='0.4pt', rounded_corners='1pt',
-        draw='gray', fill='white', thick=True)
+        below_right='1mm', inner_sep='0.2pt', rounded_corners='1pt',
+        draw='lightgray')
 
     plot.node(x[0], plot.ymax, r'\phantom{\includegraphics{fig10b.in.pdf}}',
-        below_right='0.8mm', inner_sep='0.4pt', rounded_corners='1pt',
-        draw='gray', thick=True)
+        below_right='1mm', inner_sep='0.2pt', rounded_corners='1pt',
+        draw='lightgray')
 
     plot.save('fig10b.pdf')
 
-q, x, GMKG = elphmod.bravais.path('GMKG', ibrav=4, N=198)
+q, x, corners = elphmod.bravais.path('GMKG', ibrav=4, N=198)
 
 q0, x0, w0 = elphmod.el.read_bands('../fig05/ref.freq')
 
@@ -283,35 +277,33 @@ if comm.rank == 0:
 
         margin=margin,
         left=Margin,
-        bottom=0.4,
-        top=0.2,
-
-        grid=True,
+        bottom=Margin / 2,
 
         ymin=-60.0,
-        ymax=+20.0,
+        ymax=+50.0,
         ystep=20.0,
 
-        xticks=zip(x[GMKG], [
+        xticks=list(zip(x[corners], [
             r'$\Gamma$',
             r'$\mathrm M$',
             r'$\mathrm K$',
             r'$\Gamma$',
-            ]),
+            ])),
 
-        ylabel='Phonon energy (meV)',
+        ylabel='Renormalized phonon energy (meV)',
 
         yformat=lambda y: '$%g\,\mathrm i$' % abs(y) if y < 0 else '$%g$' % y,
 
-        lpos='Lrrbbbt',
-        lopt='inner ysep=3pt, rounded corners=1pt, draw=lightgray, fill=white',
+        lpos='bc',
+        lopt='above=1mm',
         )
 
+    plot.line(y=0.0, color='lightgray')
     plot.line(color=orange, label='w/o SC', line_width='%gcm' % thickness)
     plot.line(color=mauve, label='with SC', line_width='%gcm' % thickness)
 
-    plot.width = plot.single
-    plot.height = 4.0
+    plot.width = plot.double / 3
+    plot.height = plot.single
 
     plot.axes()
 
@@ -337,4 +329,4 @@ for i, n in enumerate(nel):
 if comm.rank == 0:
     plot.save('fig10c.pdf')
 
-    storylines.combine('fig10.pdf', ['fig10%s' % a for a in 'abc'], columns=2)
+    storylines.combine('fig10.pdf', ['fig10%s' % a for a in 'abc'])

@@ -137,28 +137,16 @@ elphmod.ph.write_quadrupole_fmt('quadrupole.fmt', ph.Q)
 
 orange = storylines.Color(241, 163, 64)
 mauve = storylines.Color(153, 142, 195)
-darkorange = storylines.Color(230, 97, 1)
-darkmauve = storylines.Color(94, 60, 153)
-
-margin = 0.12
 
 marks = dict(mark='*', mark_size='0.8pt', only_marks=True)
 
 plot = storylines.Plot(
     style='APS',
-    preamble=r'\usepackage{bm}',
-
-    margin=margin,
-    left=1.0,
-    bottom=0.4,
-
-    grid=True,
 
     xticks=list(zip(x[special], [r'$\Gamma$', None, 'M'])),
 
     lpos='rt',
-    lopt='below left=1mm',
-    lbox=True,
+    lopt='below left',
     )
 
 plot.width = plot.single / 2
@@ -175,12 +163,10 @@ wq = elphmod.ph.sgnsqrt(wq2)
 w0 = elphmod.ph.sgnsqrt(w02)
 
 for nu in range(ph.size):
-    plot.line(x, wd[:, nu] * 1e3 * elphmod.misc.Ry,
-        color=mauve, thick=True, label=r'$\bm Z$')
+    plot.line(x, wd[:, nu] * 1e3 * elphmod.misc.Ry, color=orange, thick=True)
 
 for nu in range(ph.size):
-    plot.line(x, wq[:, nu] * 1e3 * elphmod.misc.Ry,
-        color=darkmauve, thick=True, label=r'$\bm Z^*, Q$')
+    plot.line(x, wq[:, nu] * 1e3 * elphmod.misc.Ry, color=mauve, thick=True)
 
 for nu in range(ph.size):
     plot.line(x0, w0[:, nu] * 1e3 * elphmod.misc.Ry, **marks)
@@ -203,12 +189,12 @@ gq = np.sort(abs(gq), axis=1)
 g0 = np.sort(abs(g0), axis=1)
 
 for nu in range(ph.size):
-    plot.line(x, gd[:, nu] * elphmod.misc.Ry ** 1.5,
-        color=orange, thick=True, label=r'$\bm Z$')
+    plot.line(x, gd[:, nu] * elphmod.misc.Ry ** 1.5, color=orange, thick=True,
+        label=r'$\mathbf Z^*$ only')
 
 for nu in range(ph.size):
-    plot.line(x, gq[:, nu] * elphmod.misc.Ry ** 1.5,
-        color=darkorange, thick=True, label=r'$\bm Z^*, Q$')
+    plot.line(x, gq[:, nu] * elphmod.misc.Ry ** 1.5, color=mauve, thick=True,
+        label=r'$\mathbf Z^*$ and $Q$')
 
 for nu in range(ph.size):
     plot.line(x0, g0[:, nu] * elphmod.misc.Ry ** 1.5, **marks)

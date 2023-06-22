@@ -7,6 +7,9 @@ import storylines
 if elphmod.MPI.comm.rank != 0:
     raise SystemExit
 
+Margin = 0.96
+margin = 0.12
+
 orange = storylines.Color(241, 163, 64)
 mauve = storylines.Color(153, 142, 195)
 darkorange = storylines.Color(230, 97, 1)
@@ -17,9 +20,10 @@ k = np.linspace(0, np.pi, 1000, endpoint=False)
 plot = storylines.Plot(
     style='APS',
 
-    left=0.5,
+    left=Margin / 2,
     right=2.5,
-    bottom=0.5,
+    bottom=Margin / 2,
+    top=margin,
 
     ymin=-7.7,
     ymax=6.3,
@@ -78,7 +82,7 @@ for color, x, ymin, ymax, angle, symbol in zip(
         ):
     plot.code(r'''
 \draw[<->, very thick, color=%s] (<x=%g>, <y=%g>)
-    to[out=%g, in=%g] node[right=-2pt] {$\boldsymbol{{\in}\,%s}$}
+    to[out=%g, in=%g] node[right=-2pt] {$\in$\,%s}
     (<x=%g>, <y=%g>);''' % (color, x, ymin, angle, -angle, symbol, x, ymax))
 
 plot.save('fig01.pdf')

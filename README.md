@@ -1,6 +1,6 @@
 # To screen, or not to screen
 
-This repository contains scripts and data associated with the following paper:
+This repository contains the source code and data associated with the paper:
 
 - Jan Berges, Nina Girotto, Tim Wehling, Nicola Marzari, and Samuel Poncé,
   *Phonon self-energy corrections: To screen, or not to screen*,
@@ -54,6 +54,7 @@ We have introduced the following inputs in `epw.x`:
 - `cdfpt_dir`: Equivalent of `dvscf_dir` for cDFPT data
 - `xdfpt_dir`: Equivalent of `dvscf_dir` for extra DFPT data (low smearing)
 - `unscreen_fine`: Perform unscreening on fine mesh? [`false`]
+- `geff`: Drop negative eigenvalue of outer product of vertices? [`false`]
 - `bare`: Is the data in `cdfpt_dir` bare (relevant for unscreening)? [`false`]
 - `types`: Smearing types corresponding to `temps` [`-99`]
     - `0`: Gaussian
@@ -79,8 +80,8 @@ Some inputs are used differently in the cDFPT case:
 
 - `asr_typ`: The new option `'none'` disables the ASR correction [`'simple'`]
 - `temps`: Low smearings for which the phonon frequencies are estimated in K
-- `degaussq`: Self-energy smearing for phonon spectral function in meV [`0.05`]
-- `degaussw`: Overall smearing for phonon spectral function in eV [`0.025`]
+- `degaussw`: Self-energy smearing for phonon spectral function in eV [`0.025`]
+- `degaussq`: Overall smearing for phonon spectral function in meV [`0.05`]
 
 EPW also watches for new optional input files:
 
@@ -137,7 +138,7 @@ matrix elements both on a coarse q mesh and for selected q points along a path.
 Then we Fourier-interpolate the former, minimizing deviations from the latter.
 Here, the free parameters are the independent elements of the quadrupole tensors
 Q and the range-separation parameter L entering the formulas for the long-range
-components which are subtracted and added before and after interpolation. First,
+components that are subtracted and added before and after interpolation. First,
 we optimize L for Q = 0, minimizing the short-range part of the force constants.
 Second, we optimize Q for constant L. A simultaneous optimization would also be
 possible, but it is only important that L is in the correct range.

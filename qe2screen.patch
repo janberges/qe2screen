@@ -1,20 +1,21 @@
 diff --git a/EPW/src/bcast_epw_input.f90 b/EPW/src/bcast_epw_input.f90
-index 847190887..a2631d376 100644
+index 847190887..9500fbc94 100644
 --- a/EPW/src/bcast_epw_input.f90
 +++ b/EPW/src/bcast_epw_input.f90
-@@ -53,7 +53,10 @@
+@@ -53,7 +53,11 @@
                              wannier_plot_supercell, wannier_plot_radius,      &
                              fixsym, epw_no_t_rev, epw_tr, epw_nosym, epw_noinv, &
                              epw_crysym, bfieldx, bfieldy, bfieldz, tc_linear, &
 -                            tc_linear_solver
 +                            tc_linear_solver, bare, cdfpt_dir, cdfpt_max,     &
-+                            cdfpt_min, corr, eig_plot, L, lcdfpt, lpolarc,    &
-+                            lpolarx, lxdfpt, perp, phlabel, prtgkkc, prtgkkx, &
-+                            temp_inf, type_inf, types, unscreen_fine, xdfpt_dir
++                            cdfpt_min, corr, eig_plot, geff, L, lcdfpt,       &
++                            lpolarc, lpolarx, lxdfpt, perp, phlabel, prtgkkc, &
++                            prtgkkx, temp_inf, type_inf, types,               &
++                            unscreen_fine, xdfpt_dir
    USE elph2,         ONLY : elph
    USE mp,            ONLY : mp_bcast
    USE mp_world,      ONLY : world_comm
-@@ -88,6 +91,7 @@
+@@ -88,6 +92,7 @@
    CALL mp_bcast(plselfen        , meta_ionode_id, world_comm)
    CALL mp_bcast(ephwrite        , meta_ionode_id, world_comm)
    CALL mp_bcast(band_plot       , meta_ionode_id, world_comm)
@@ -22,7 +23,7 @@ index 847190887..a2631d376 100644
    CALL mp_bcast(fermi_plot      , meta_ionode_id, world_comm)
    CALL mp_bcast(vme             , meta_ionode_id, world_comm)
    CALL mp_bcast(epbread         , meta_ionode_id, world_comm)
-@@ -122,6 +126,8 @@
+@@ -122,6 +127,8 @@
    CALL mp_bcast(tc_linear       , meta_ionode_id, world_comm)
    CALL mp_bcast(tc_linear_solver, meta_ionode_id, world_comm)
    CALL mp_bcast(lpolar          , meta_ionode_id, world_comm)
@@ -31,7 +32,7 @@ index 847190887..a2631d376 100644
    CALL mp_bcast(lifc            , meta_ionode_id, world_comm)
    CALL mp_bcast(lscreen         , meta_ionode_id, world_comm)
    CALL mp_bcast(cumulant        , meta_ionode_id, world_comm)
-@@ -147,6 +153,8 @@
+@@ -147,6 +154,8 @@
    CALL mp_bcast(carrier         , meta_ionode_id, world_comm)
    CALL mp_bcast(restart         , meta_ionode_id, world_comm)
    CALL mp_bcast(prtgkk          , meta_ionode_id, world_comm)
@@ -40,19 +41,20 @@ index 847190887..a2631d376 100644
    CALL mp_bcast(lphase          , meta_ionode_id, world_comm)
    CALL mp_bcast(lindabs         , meta_ionode_id, world_comm)
    CALL mp_bcast(use_ws          , meta_ionode_id, world_comm)
-@@ -161,6 +169,11 @@
+@@ -161,6 +170,12 @@
    CALL mp_bcast(epw_nosym       , meta_ionode_id, world_comm)
    CALL mp_bcast(epw_noinv       , meta_ionode_id, world_comm)
    CALL mp_bcast(epw_crysym      , meta_ionode_id, world_comm)
 +  CALL mp_bcast(lcdfpt          , meta_ionode_id, world_comm)
 +  CALL mp_bcast(lxdfpt          , meta_ionode_id, world_comm)
 +  CALL mp_bcast(unscreen_fine   , meta_ionode_id, world_comm)
++  CALL mp_bcast(geff            , meta_ionode_id, world_comm)
 +  CALL mp_bcast(bare            , meta_ionode_id, world_comm)
 +  CALL mp_bcast(perp            , meta_ionode_id, world_comm)
    !
    ! integers
    !
-@@ -200,6 +213,9 @@
+@@ -200,6 +215,9 @@
    CALL mp_bcast(bnd_cum     , meta_ionode_id, world_comm)
    CALL mp_bcast(mob_maxiter , meta_ionode_id, world_comm)
    CALL mp_bcast(wannier_plot_supercell, meta_ionode_id, world_comm)
@@ -62,7 +64,7 @@ index 847190887..a2631d376 100644
    !
    ! REAL*8
    !
-@@ -219,6 +235,7 @@
+@@ -219,6 +237,7 @@
    CALL mp_bcast(tempsmin      , meta_ionode_id, world_comm)
    CALL mp_bcast(tempsmax      , meta_ionode_id, world_comm)
    CALL mp_bcast(temps         , meta_ionode_id, world_comm)
@@ -70,7 +72,7 @@ index 847190887..a2631d376 100644
    CALL mp_bcast(conv_thr_raxis, meta_ionode_id, world_comm)
    CALL mp_bcast(conv_thr_iaxis, meta_ionode_id, world_comm)
    CALL mp_bcast(conv_thr_racon, meta_ionode_id, world_comm)
-@@ -245,6 +262,9 @@
+@@ -245,6 +264,9 @@
    CALL mp_bcast(bfieldx       , meta_ionode_id, world_comm)
    CALL mp_bcast(bfieldy       , meta_ionode_id, world_comm)
    CALL mp_bcast(bfieldz       , meta_ionode_id, world_comm)
@@ -80,7 +82,7 @@ index 847190887..a2631d376 100644
    !
    ! characters
    !
-@@ -257,6 +277,9 @@
+@@ -257,6 +279,9 @@
    CALL mp_bcast(filqf            , meta_ionode_id, world_comm)
    CALL mp_bcast(fileig           , meta_ionode_id, world_comm)
    CALL mp_bcast(dvscf_dir        , meta_ionode_id, world_comm)
@@ -1286,7 +1288,7 @@ index 83db475a1..6b90a2eb5 100644
    !
    IF (epwread) THEN
 diff --git a/EPW/src/ephwann_shuffle.f90 b/EPW/src/ephwann_shuffle.f90
-index b8f005982..275eadb84 100644
+index b8f005982..bed02aa7d 100644
 --- a/EPW/src/ephwann_shuffle.f90
 +++ b/EPW/src/ephwann_shuffle.f90
 @@ -19,7 +19,8 @@
@@ -2100,10 +2102,10 @@ index b8f005982..275eadb84 100644
 +          !
 +          IF (specfun_ph) THEN
 +            WRITE(filint, "(A, 'crw', I0, '.freq')") TRIM(phlabel), itemp
-+            CALL plot_band_phon(TRIM(filint), wfw1(:, :, itemp))
++            CALL plot_band_phon(TRIM(filint), wfw1(:, :, itemp) / ryd2mev ** 2)
 +            !
 +            WRITE(filint, "(A, 'rw', I0, '.freq')") TRIM(phlabel), itemp
-+            CALL plot_band_phon(TRIM(filint), wfw2(:, :, itemp))
++            CALL plot_band_phon(TRIM(filint), wfw2(:, :, itemp) / ryd2mev ** 2)
 +          ENDIF
 +        ENDDO
 +      ENDIF
@@ -2255,7 +2257,7 @@ index b8f005982..275eadb84 100644
    IF (lindabs .AND. (.NOT. scattering)) THEN
      IF (carrier) THEN
 diff --git a/EPW/src/ephwann_shuffle_mem.f90 b/EPW/src/ephwann_shuffle_mem.f90
-index 9f5250127..8120e5425 100644
+index 9f5250127..a1b4e376c 100644
 --- a/EPW/src/ephwann_shuffle_mem.f90
 +++ b/EPW/src/ephwann_shuffle_mem.f90
 @@ -23,6 +23,7 @@
@@ -2951,10 +2953,10 @@ index 9f5250127..8120e5425 100644
 +          !
 +          IF (specfun_ph) THEN
 +            WRITE(filint, "(A, 'crw', I0, '.freq')") TRIM(phlabel), itemp
-+            CALL plot_band_phon(TRIM(filint), wfw1(:, :, itemp))
++            CALL plot_band_phon(TRIM(filint), wfw1(:, :, itemp) / ryd2mev ** 2)
 +            !
 +            WRITE(filint, "(A, 'rw', I0, '.freq')") TRIM(phlabel), itemp
-+            CALL plot_band_phon(TRIM(filint), wfw2(:, :, itemp))
++            CALL plot_band_phon(TRIM(filint), wfw2(:, :, itemp) / ryd2mev ** 2)
 +          ENDIF
 +        ENDDO
 +      ENDIF
@@ -3094,7 +3096,7 @@ index 87b2fd7a7..47b7ccc9e 100644
      ALLOCATE(igk_k_all(npwx, nkstot), STAT = ierr)
      IF (ierr /= 0) CALL errore('epw_init', 'Error allocating igk_k_all', 1)
 diff --git a/EPW/src/epw_readin.f90 b/EPW/src/epw_readin.f90
-index 88e4c9f3f..82a5fa663 100644
+index 88e4c9f3f..b776128bd 100644
 --- a/EPW/src/epw_readin.f90
 +++ b/EPW/src/epw_readin.f90
 @@ -60,7 +60,11 @@
@@ -3103,9 +3105,9 @@ index 88e4c9f3f..82a5fa663 100644
                              epw_tr, epw_nosym, epw_noinv, epw_crysym,                  &
 -                            bfieldx, bfieldy, bfieldz, tc_linear, tc_linear_solver
 +                            bfieldx, bfieldy, bfieldz, tc_linear, tc_linear_solver,    &
-+                            bare, cdfpt_dir, cdfpt_max, cdfpt_min, corr, eig_plot, L,  &
-+                            lcdfpt, lpolarc, lpolarx, lxdfpt, perp, phlabel, phlabel,  &
-+                            prtgkkc, prtgkkx, temp_inf, type_inf, types,               &
++                            bare, cdfpt_dir, cdfpt_max, cdfpt_min, corr, eig_plot,     &
++                            geff, L, lcdfpt, lpolarc, lpolarx, lxdfpt, perp, phlabel,  &
++                            phlabel, prtgkkc, prtgkkx, temp_inf, type_inf, types,      &
 +                            unscreen_fine, xdfpt_dir
    USE klist_epw,     ONLY : xk_all, xk_loc, xk_cryst, isk_all, isk_loc, et_all, et_loc
    USE elph2,         ONLY : elph, num_wannier_plot, wanplotlist, gtemp
@@ -3132,7 +3134,7 @@ index 88e4c9f3f..82a5fa663 100644
         wannier_plot_supercell, wannier_plot_scale, wannier_plot_radius,        &
         fixsym, epw_no_t_rev, epw_tr, epw_nosym, epw_noinv, epw_crysym,         &
 -       tc_linear, tc_linear_solver,                                            &
-+       tc_linear, tc_linear_solver, bare, cdfpt_dir, corr, eig_plot, L,        &
++       tc_linear, tc_linear_solver, bare, cdfpt_dir, corr, eig_plot, geff, L,  &
 +       lpolarc, lpolarx, perp, phlabel, prtgkkc, prtgkkx, temp_inf, type_inf,  &
 +       types, unscreen_fine, xdfpt_dir,                                        &
    !---------------------------------------------------------------------------------
@@ -3156,7 +3158,7 @@ index 88e4c9f3f..82a5fa663 100644
    ! fermi_plot  : if .TRUE. write files to plot Fermi surface
    ! degaussq    : smearing for sum over q in e-ph coupling (units of meV)
    ! delta_qsmear: change in energy for each additional smearing in the a2f (units of meV)
-@@ -253,6 +264,13 @@
+@@ -253,6 +264,14 @@
    ! nstemp      : number of temperature points for which the Eliashberg equations are solved
    ! tempsmin    : minimum temperature for which the Eliashberg equations are solved
    ! tempsmax    : maximum temperature " "
@@ -3165,12 +3167,13 @@ index 88e4c9f3f..82a5fa663 100644
 +  ! types        : input smearing types corresponding to temps
 +  ! type_inf     : input smearing types corresponding high smearing
 +  ! unscreen_fine: if .TRUE. unscreen DFPT phonons on fine mesh
++  ! geff         : if .TRUE. drop negative eigenvalue of outer product of cDFPT and DFPT coupling
 +  ! bare         : if .TRUE. unscreen on coarse mesh in cDFPT case
 +  ! corr         : type of DFPT coupling correction: 0 (none), 1, 2, or negative band index
    ! conv_thr_raxis : convergence threshold for iterative solution of real-axis Eliashberg equations
    ! conv_thr_iaxis : convergence threshold for iterative solution of imag-axis Eliashberg equations
    ! conv_thr_racon : convergence threshold for iterative solution of analytic continuation of
-@@ -287,6 +305,8 @@
+@@ -287,6 +306,8 @@
    !
    ! Added by Carla Verdi & Samuel Pon\'e
    ! lpolar     : if .TRUE. enable the correct Wannier interpolation in the case of polar material.
@@ -3179,7 +3182,7 @@ index 88e4c9f3f..82a5fa663 100644
    ! lifc       : if .TRUE. reads interatomic force constants produced by q2r.x for phonon interpolation
    ! asr_typ    : select type of ASR if lifc=.TRUE. (as in matdyn); otherwise it is the usual simple sum rule
    ! lscreen    : if .TRUE. the e-ph matrix elements are screened by the RPA or TF dielectric function
-@@ -323,6 +343,8 @@
+@@ -323,6 +344,8 @@
    ! shortrange      : if .TRUE. computes the short-range part of the el-ph (can
    !                   only be used with lpolar = .TRUE. )
    ! prtgkk          : Print the vertex |g| [meV]. This generates huge outputs.
@@ -3188,7 +3191,7 @@ index 88e4c9f3f..82a5fa663 100644
    ! etf_mem         : if 0 no optimization, if 1 less memory is used for the fine grid interpolation
    !                   When etf_mem == 2, an additional loop is done on mode for the fine grid interpolation
    !                   part. This reduces the memory further by a factor "nmodes".
-@@ -337,6 +359,8 @@
+@@ -337,6 +360,8 @@
    ! selecqread      : If .TRUE., restart from the selecq.fmt file
    ! nc              : Number of carrier for the Ziman resistivity formula (can be fractional)
    ! bfieldx, y, z   : Value of the magnetic field in Tesla along x, y, z direction.
@@ -3197,7 +3200,7 @@ index 88e4c9f3f..82a5fa663 100644
    !
    ! Added by Manos Kioupakis
    ! omegamin        : Photon energy minimum
-@@ -454,6 +478,9 @@
+@@ -454,6 +479,9 @@
    ngaussw      = 1
    outdir       = '.'
    dvscf_dir    = '.'
@@ -3207,7 +3210,7 @@ index 88e4c9f3f..82a5fa663 100644
    prefix       = 'pwscf'
    filqf        = ' '
    restart_filq = ' '
-@@ -489,6 +516,7 @@
+@@ -489,6 +517,7 @@
    vme          = 'wannier' ! Note: Was .FALSE. by default until EPW v5.1 and then .TRUE. until EPW v5.4
    ephwrite     = .FALSE.
    band_plot    = .FALSE.
@@ -3215,7 +3218,7 @@ index 88e4c9f3f..82a5fa663 100644
    fermi_plot   = .FALSE.
    nqsmear      = 10
    nqstep       = 500
-@@ -502,6 +530,8 @@
+@@ -502,6 +531,8 @@
    liso         = .FALSE.
    laniso       = .FALSE.
    lpolar       = .FALSE.
@@ -3224,7 +3227,7 @@ index 88e4c9f3f..82a5fa663 100644
    lifc         = .FALSE.
    asr_typ      = 'simple'
    lscreen      = .FALSE.
-@@ -531,6 +561,12 @@
+@@ -531,6 +562,13 @@
    gap_edge     = 0.d0
    nstemp       = 0
    temps(:)     = 0.d0
@@ -3232,12 +3235,13 @@ index 88e4c9f3f..82a5fa663 100644
 +  types(:)     = -99
 +  type_inf     = -99
 +  unscreen_fine= .FALSE.
++  geff         = .FALSE.
 +  bare         = .FALSE.
 +  corr         = 0
    nsiter       = 40
    npade        = 90
    muc          = 0.d0
-@@ -554,6 +590,8 @@
+@@ -554,6 +592,8 @@
    longrange    = .FALSE.
    shortrange   = .FALSE.
    prtgkk       = .FALSE.
@@ -3246,7 +3250,7 @@ index 88e4c9f3f..82a5fa663 100644
    nel          = 0.0d0
    meff         = 1.d0
    epsiheg      = 1.d0
-@@ -578,6 +616,8 @@
+@@ -578,6 +618,8 @@
    bfieldx      = 0.d0  ! Tesla
    bfieldy      = 0.d0  ! Tesla
    bfieldz      = 0.d0  ! Tesla
@@ -3255,7 +3259,7 @@ index 88e4c9f3f..82a5fa663 100644
    !
    ! --------------------------------------------------------------------------------
    ! Added for polaron calculations. Originally by Danny Sio, modified by Chao Lian.
-@@ -750,7 +790,7 @@
+@@ -750,7 +792,7 @@
        'carrier must be .TRUE. if you specify ncarrier.', 1)
    IF (carrier .AND. (ABS(ncarrier) < 1E+5))  CALL errore('epw_readin', &
        'The absolute value of the doping carrier concentration must be larger than 1E5 cm^-3', 1)
@@ -3264,7 +3268,7 @@ index 88e4c9f3f..82a5fa663 100644
        'Error: longrange or shortrange can only be true if lpolar is true as well.', 1)
    IF (longrange .AND. shortrange) CALL errore('epw_readin',&
        'Error: longrange and shortrange cannot be both true.', 1)
-@@ -808,7 +848,7 @@
+@@ -808,7 +850,7 @@
      WRITE(stdout, '(5x,a)') "The use of 2D interpolation is experimental for now"
      WRITE(stdout, '(5x,a)') "Use with caution"
      WRITE(stdout, '(5x,a)') "WARNING - 2D - WARNING - 2D - WARNING - 2D - WARNING - 2D"
@@ -3273,7 +3277,7 @@ index 88e4c9f3f..82a5fa663 100644
    ENDIF
    !
    IF (etf_mem == 3) THEN
-@@ -864,6 +904,7 @@
+@@ -864,6 +906,7 @@
    END IF
    ! go from K to Ry
    temps(:) = temps(:) * kelvin2eV / ryd2ev
@@ -3281,7 +3285,7 @@ index 88e4c9f3f..82a5fa663 100644
    !
    CALL mp_bcast(nstemp, meta_ionode_id, world_comm)
    CALL mp_bcast(temps, meta_ionode_id, world_comm)
-@@ -925,6 +966,30 @@
+@@ -925,6 +968,30 @@
    tmp_dir = trimcheck(outdir)
    dvscf_dir = trimcheck(dvscf_dir)
    !
@@ -3313,7 +3317,7 @@ index 88e4c9f3f..82a5fa663 100644
    !
    !   Here we finished the reading of the input file.
 diff --git a/EPW/src/epwcom.f90 b/EPW/src/epwcom.f90
-index 3ec6afc2c..ae725c9ae 100644
+index 3ec6afc2c..9cc292771 100644
 --- a/EPW/src/epwcom.f90
 +++ b/EPW/src/epwcom.f90
 @@ -21,6 +21,12 @@
@@ -3357,7 +3361,7 @@ index 3ec6afc2c..ae725c9ae 100644
    LOGICAL :: lphase
    !! if .TRUE. fix the gauge when diagonalizing the interpolated dynamical matrix and electronic Hamiltonian.
    LOGICAL :: lindabs
-@@ -124,6 +140,14 @@
+@@ -124,6 +140,16 @@
    !! if .TRUE. restart from the selecq.fmt file
    LOGICAL :: assume_metal
    !! if .TRUE. we are dealing with a metal.
@@ -3367,12 +3371,14 @@ index 3ec6afc2c..ae725c9ae 100644
 +  !! if .TRUE. process an extra set of DFPT data (e.g., at low temperature)
 +  LOGICAL :: unscreen_fine
 +  !! if .TRUE. unscreen DFPT phonons on fine mesh
++  LOGICAL :: geff
++  !! if .TRUE. drop negative eigenvalue of outer product of cDFPT and DFPT coupling
 +  LOGICAL :: bare
 +  !! if .TRUE. unscreen on coarse mesh in cDFPT case
    !
    ! Superconductivity
    LOGICAL :: ephwrite
-@@ -239,6 +263,14 @@
+@@ -239,6 +265,14 @@
    !! max. temperature - deprecated as an input parameter
    REAL(KIND = DP) :: temps(50)
    !! input temperature array (units of Kelvin)
@@ -3387,7 +3393,7 @@ index 3ec6afc2c..ae725c9ae 100644
    !
    ! Superconductivity
    INTEGER :: nswfc
-@@ -268,6 +300,14 @@
+@@ -268,6 +302,14 @@
    !! max frequency for frequency scan in \delta( e_k - e_k+q - w ) when strict sel. rule is applied
    REAL(KIND = DP) :: delta_smear
    !! change in energy for each additional smearing in the selfen_phon
@@ -5110,10 +5116,10 @@ index 570848ccd..48b7f311c 100644
            !
            ! rotate epmat in the cartesian representation for this q in the star
 diff --git a/EPW/src/selfen.f90 b/EPW/src/selfen.f90
-index aaea04cd8..fa96e5a3c 100644
+index aaea04cd8..03ef906ba 100644
 --- a/EPW/src/selfen.f90
 +++ b/EPW/src/selfen.f90
-@@ -945,6 +945,635 @@
+@@ -945,6 +945,664 @@
      !-----------------------------------------------------------------------
      !
      !-----------------------------------------------------------------------
@@ -5281,7 +5287,7 @@ index aaea04cd8..fa96e5a3c 100644
 +                           nbndfst, ibndmin, nkf, nktotf, efw0, efw_inf, efw, gtemp
 +    USE epwcom,     ONLY : cdfpt_min, cdfpt_max, types, nstemp, degaussw, degaussq, &
 +                           specfun_ph, wmin_specfun, wmax_specfun, nw_specfun, corr, &
-+                           temp_inf, type_inf, unscreen_fine, lxdfpt
++                           temp_inf, type_inf, unscreen_fine, geff, lxdfpt
 +    USE ions_base,  ONLY : amass, ityp
 +    USE klist,      ONLY : degauss, ngauss
 +    USE matrix_inversion, ONLY: invmat
@@ -5613,6 +5619,8 @@ index aaea04cd8..fa96e5a3c 100644
 +                  ENDDO
 +                ENDDO
 +                !
++                IF (geff) CALL effective(g2pf)
++                !
 +                IF (unscreen_fine) THEN
 +                  pipf0 = pipf0 + g2pf * chi0
 +                  piff0 = piff0 + g2ff * chi0
@@ -5642,6 +5650,9 @@ index aaea04cd8..fa96e5a3c 100644
 +                    g2ff(jcart, icart) = CONJG(g_xdfpt(jcart)) * g_xdfpt(icart)
 +                  ENDDO
 +                ENDDO
++                !
++                IF (geff) CALL effective(g2pf)
++                !
 +              ENDIF
 +              !
 +              DO itemp = 1, nstemp
@@ -5686,6 +5697,8 @@ index aaea04cd8..fa96e5a3c 100644
 +                          + CONJG(g_screen(jcart)) * g_cdfpt(icart)) / two
 +                      ENDDO
 +                    ENDDO
++                    !
++                    IF (geff) CALL effective(g2pf)
 +                  ENDIF
 +                  !
 +                  pipf(:, :, itemp) = pipf(:, :, itemp) + g2pf * chi
@@ -5705,6 +5718,28 @@ index aaea04cd8..fa96e5a3c 100644
 +          ENDDO
 +        ENDDO
 +      END SUBROUTINE bubble
++      !
++      SUBROUTINE effective(g2)
++        COMPLEX(KIND = DP), INTENT(INOUT) :: g2(nmodes, nmodes)
++        !
++        REAL(KIND = DP) :: v(nmodes)
++        COMPLEX(KIND = DP) :: e(nmodes, nmodes)
++        !
++        CALL cdiagh2(nmodes, g2, nmodes, v, e)
++        !
++        v(1:nmodes - 1) = zero
++        !
++        g2(:, :) = czero
++        !
++        DO icart = 1, nmodes
++          DO jcart = 1, nmodes
++            DO imode = 1, nmodes
++              g2(jcart, icart) = g2(jcart, icart) &
++                + e(jcart, imode) * v(imode) * CONJG(e(icart, imode))
++            ENDDO
++          ENDDO
++        ENDDO
++      END SUBROUTINE effective
 +      !
 +      SUBROUTINE spectrum(d, w, u)
 +        COMPLEX(KIND = DP), INTENT(IN) :: d(nmodes, nmodes)
@@ -5736,7 +5771,7 @@ index aaea04cd8..fa96e5a3c 100644
 +        a = zero
 +        !
 +        DO imode = 1, nmodes
-+          a = a + w / pi * AIMAG(d(imode, imode))
++          a = a + two * w / pi * AIMAG(d(imode, imode))
 +        ENDDO
 +        !
 +      END SUBROUTINE specfun

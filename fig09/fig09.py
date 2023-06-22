@@ -6,6 +6,9 @@ import storylines
 
 comm = elphmod.MPI.comm
 
+Margin = 0.96
+margin = 0.12
+
 labels = ['abc', 'def']
 
 nk = 96
@@ -107,19 +110,19 @@ for iq in range(len(q)):
 
     if comm.rank == 0:
         for i, (data, title) in enumerate([
-                (Pi_BZ, r'$-\varPi$'),
-                (X0_BZ, r'$-\chi^{\mathrm b}$'),
+                (Pi_BZ, r'$-\varPi^{\text{00}}$'),
+                (X0_BZ, r'$-\chi^{\text b}$'),
                 (g2_BZ, r'$g^2$')]):
 
             plot = storylines.Plot(
                 style='APS',
                 height=0,
-                margin=0.1,
+                margin=margin,
                 xyaxes=False,
                 background='fig09%s.png' % labels[iq][i],
                 )
 
-            plot.width = (1 - plot.single) / 3
+            plot.width = (Margin / 2 + 5 * margin - plot.single) / 3
 
             plot.line(*zip(*elphmod.bravais.BZ()), thick=True)
 
@@ -136,15 +139,15 @@ for iq in range(len(q)):
                     color='white', densely_dotted=True)
 
             if i == 0:
-                plot.left = 0.5
-                plot.node(-kxmax, 0, r'$\boldsymbol q = \mathrm %s$' % Q[iq],
+                plot.left = Margin / 2
+                plot.node(-kxmax, 0, r'$\mathbf q = \mathrm %s$' % Q[iq],
                     above=True, rotate=90)
 
             if iq == 0:
-                plot.top = 0.5
+                plot.top = Margin / 2
                 plot.title = title
             else:
-                plot.bottom = 0.5
+                plot.bottom = Margin / 2
 
                 if i == 0:
                     plot.node(kxmax, -kymax, '0', left=True,

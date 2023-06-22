@@ -5,17 +5,18 @@ import storylines
 
 comm = elphmod.MPI.comm
 
-labels = ['abcde', 'fghij', 'klmno', 'pqrst', 'uvwxy']
-
-Margin = 0.4
+height = 11.0 + 2.0 / 3.0
+Margin = 0.96
 margin = 0.12
-
-nbnd = [1, 5, 13, 17, 22]
 
 orange = storylines.Color(241, 163, 64)
 mauve = storylines.Color(153, 142, 195)
 
-q, x, GMKG = elphmod.bravais.path('GMKG', ibrav=4)
+labels = ['abcde', 'fghij', 'klmno', 'pqrst', 'uvwxy']
+
+nbnd = [1, 5, 13, 17, 22]
+
+q, x, corners = elphmod.bravais.path('GMKG', ibrav=4)
 
 q0, x0, w0 = elphmod.el.read_bands('ref.freq')
 qi, xi, wi = elphmod.el.read_bands('phband.freq')
@@ -32,9 +33,7 @@ for l, label in enumerate(['r', 'cr', 'tcr', 'bcr', 'btcr']):
         plot = storylines.Plot(
             style='APS',
 
-            margin=Margin,
-            left=Margin + 0.1,
-            right=Margin + 0.1,
+            margin=Margin / 2,
 
             dbottom=0 if l == 4 else margin,
             dtop=margin,
@@ -42,12 +41,12 @@ for l, label in enumerate(['r', 'cr', 'tcr', 'bcr', 'btcr']):
             ymax=22.5,
             ystep=15.0,
 
-            xticks=zip(x[GMKG], [
+            xticks=list(zip(x[corners], [
                 r'$\Gamma$',
                 r'$\mathrm M$',
                 r'$\mathrm K$',
                 r'$\Gamma$',
-                ]),
+                ])),
 
             yformat=lambda y: '$%g\,\mathrm i$' % abs(y)
                 if y < 0 else '$%g$' % y,
@@ -55,19 +54,20 @@ for l, label in enumerate(['r', 'cr', 'tcr', 'bcr', 'btcr']):
 
         plot.ymin = plot.ymax - plot.ystep * (4 if l == 3 else 3)
 
-        plot.width = (3 * Margin + 0.2 + 2 * margin * (len(nbnd) - 1)
-            - plot.single) / len(nbnd)
+        plot.width = (1.5 * Margin + 2 * (len(nbnd) - 1) * margin
+            - plot.double) / len(nbnd)
 
-        plot.height = ((margin if l == 4 else 2 * margin)
-            + (4 if l == 3 else 3) * 0.47 * plot.width)
+        plot.height = (4 if l == 3 else 3) * (height - Margin + margin) / 16
 
-        plot.line(grid=True)
-
-        if l != 4:
+        if l == 4:
+            plot.height += Margin / 2
+        else:
             plot.bottom = margin
-            plot.xmarks = False
+            plot.xlabels = False
 
         if l == 0:
+            plot.height += Margin / 2 - margin
+
             plot.title = r'%d band' % nbnd[i]
 
             if n != 1:
@@ -78,7 +78,9 @@ for l, label in enumerate(['r', 'cr', 'tcr', 'bcr', 'btcr']):
         if i != 0:
             plot.left = margin
             plot.ylabel = None
-            plot.ymarks = False
+            plot.ylabels = False
+
+        plot.line(y=0.0, color='lightgray')
 
         if i == len(nbnd) - 1:
             plot.node(x[-1], (plot.ymax + plot.ymin) / 2,
@@ -90,19 +92,19 @@ for l, label in enumerate(['r', 'cr', 'tcr', 'bcr', 'btcr']):
         for nu in range(len(wi)):
             plot.line(xi[1:-1], wi[nu, 1:-1], color='lightgray', cut=True)
 
-        for nu in range(len(wr)):
-            plot.fatband(xr[1:-1], wr[nu, 1:-1], thick=True,
-                color=[orange, mauve, mauve, 'gray', 'gray'][l],
-                thickness=0.8 * storylines.pt, protrusion=1.0, cut=True)
-
         plot.axes()
+
+        for nu in range(len(wr)):
+            plot.line(xr[1:-1], wr[nu, 1:-1], thick=True, cut=True,
+                color=[orange, mauve, mauve, 'gray', 'gray'][l])
 
         for nu in range(len(w0)):
             plot.line(x0, w0[nu], mark='*', mark_size='0.3pt', only_marks=True,
                 cut=True)
 
-        plot.node(x[GMKG[2]], -30 if l == 3 else -15, '(%s)' % labels[l][i],
-            above_right='-1mm')
+        plot.node(x[0], plot.ymax, '(%s)' % labels[l][i], below_right='0.5mm',
+            yshift='%gcm' % -margin, inner_sep='1pt', rounded_corners=True,
+            fill='white')
 
         plot.save('fig05%s.pdf' % labels[l][i])
 
@@ -110,14 +112,16 @@ if comm.rank == 0:
     plot = storylines.Plot(
         style='APS',
 
-        width=Margin,
-        height=2 * plot.height,
+        width=Margin / 2,
+        height=5.0,
 
         margin=0.0,
         xyaxes=False,
         )
 
-    plot.node(0.0, 0.0, 'Phonon energy (meV)', rotate=90)
+    plot.code(r'\node [rotate=90, above=\baselineskip] at (%g, <y=0>) '
+        r'{Phonon energy (meV)};' % (Margin - plot.tick))
+
     plot.save('fig05.l.pdf')
 
     storylines.combine('fig05.r.pdf',

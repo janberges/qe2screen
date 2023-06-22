@@ -6,13 +6,14 @@ import storylines
 
 comm = elphmod.MPI.comm
 
-labels = 'abcdef'
-
-Margin = 0.95
+height = 11.0 + 2.0 / 3.0
+Margin = 0.96
 margin = 0.12
 
 orange = storylines.Color(241, 163, 64)
 mauve = storylines.Color(153, 142, 195)
+
+labels = 'abcdef'
 
 nbnd = [0, 1, 5, 13, 17, 22]
 
@@ -45,30 +46,20 @@ for i, n in enumerate(nbnd):
         style='APS',
         preamble=r'\usepackage{mathtools}',
 
-        width=1.28,
-        height=1.6,
+        width=2.0,
+        height=2.5,
 
-        left=0.5,
-        right=0.15,
-        bottom=0.5,
-        top=0.12,
+        margin=margin,
+        left=Margin / 2,
+        bottom=Margin / 2,
 
-        xmin=0,
-        xmax=25,
-        ymin=-5,
-        ymax=0,
+        xmin=0.0,
+        ymin=-6.0,
+        ymax=0.0,
 
-        grid=True,
-
-        xticks=[0, (25, r'\llap{25}\smash\AA')],
-        yticks=[(0, 1)] + [(np.log10(y), None if n < 3 else '')
-            for ticks in [
-                [2.5e-1, 5e-1, 7.5e-1],
-                [2.5e-2, 5e-2, 7.5e-2, 1e-1],
-                [2.5e-3, 5e-3, 7.5e-3, 1e-2],
-                [2.5e-4, 5e-4, 7.5e-4, 1e-3],
-                [2.5e-5, 5e-5, 7.5e-5, 1e-4]]
-            for n, y in enumerate(ticks)] + [(-5, '$10\mathrlap{^{-5}}$')],
+        xticks=[0, (20, '2~nm')],
+        yticks=[(0, 1),
+            (-3, '$10\mathrlap{^{-3}}$'), (-6, '$10\mathrlap{^{-6}}$')],
         )
 
     plot.axes()
@@ -99,51 +90,39 @@ for i, n in enumerate(nbnd):
 
     plot = storylines.Plot(
         style='APS',
-        preamble=r'\usepackage{mathtools}\usepackage{bm}',
 
-        left=Margin,
-        right=margin,
-        bottom=0.4,
-        top=0.4,
-
-        title=r'\smash{(%s)} %d band' % (labels[i], n),
-
-        grid=True,
+        margin=margin,
+        left=Margin / 2,
+        bottom=Margin / 2,
 
         ymin=0.0,
-        ymax=0.64,
-        ystep=0.2,
+        ymax=0.16 if i < 3 else 0.64,
+        ystep=0.05 if i < 3 else 0.2,
 
-        xticks=zip(x, [
+        xticks=list(zip(x, [
             r'$\,\mathrm K$',
-            None, None, None,
+            '', '', '',
             r'$\Gamma$',
-            None, None, None, None, None,
+            '', '', '', '', '',
             r'$\mathrm M\,$',
-            ]),
+            ])),
 
-        ylabel=r'El.-ph.\@ coupling (eV\textsuperscript{3/2})',
-
-        lpos='rt',
-        llen='2mm',
-        lopt='below left=0.5mm, inner sep=0.6mm, rounded corners=1pt, '
-            'draw=lightgray, fill=white',
+        lpos='lctm',
         )
 
-    plot.width = (Margin + margin * (2 * len(nbnd) - 1)
-        - plot.double) / len(nbnd)
-
-    plot.height = plot.width
+    plot.width = (Margin + 5 * margin - plot.double) / 3
+    plot.height = (Margin / 2 + 3 * margin - height) / 2
 
     plot.axes()
 
-    if n != 1:
-        plot.title += 's'
-
-    if i != 0:
+    if i % 3:
         plot.left = margin
         plot.ylabel = None
-        plot.ymarks = False
+        plot.ylabels = False
+
+    if i < 3:
+        plot.bottom = margin
+        plot.xlabels = False
 
     for nu in range(len(gn)):
         plot.line(xn, gn[nu], color='gray')
@@ -161,20 +140,41 @@ for i, n in enumerate(nbnd):
 
         plot.line(label='*next*', color=orange,
             mark='+', mark_size='0.6pt', only_marks=True)
-        plot.line(label=r'$\bm Z^*$', color=orange, thick=True)
+        plot.line(label=r'$\mathbf Z^*$ only', color=orange, thick=True)
 
         plot.line(label='*next*', color=mauve,
             mark='x', mark_size='0.6pt', only_marks=True)
-        plot.line(label=r'$\bm Z\mathrlap{^*}, Q$', color=mauve, thick=True)
+        plot.line(label=r'$\mathbf Z^*$ and $Q$', color=mauve, thick=True)
 
     for nu in range(len(g0)):
         plot.line(x0, g0[nu], mark='*', mark_size='0.3pt', only_marks=True)
 
-    plot.node(0, plot.ymax, r'\includegraphics{fig04%s.in.pdf}' % labels[i],
-        below_right='-0.6pt', inner_sep='0.3mm', rounded_corners='1pt',
-        draw='gray', fill='white', thick=True)
+    plot.node(x[0], plot.ymax, r'(%s) %d band%s'
+        % (labels[i], n, '' if n == 1 else 's'), below_right='0.5mm')
+
+    plot.node(x[-1], plot.ymax, r'\includegraphics{fig04%s.in.pdf}' % labels[i],
+        below_left=True)
 
     plot.save('fig04%s.pdf' % labels[i])
 
 if comm.rank == 0:
-    storylines.combine('fig04.pdf', ['fig04%s' % a for a in labels])
+    plot = storylines.Plot(
+        style='APS',
+
+        width=Margin / 2,
+        height=5.0,
+
+        margin=0.0,
+        xyaxes=False,
+        )
+
+    plot.code(r'\node [rotate=90, above=\baselineskip] at (%g, <y=0>) '
+        r'{Electron-phonon coupling (eV\textsuperscript{3/2})};'
+            % (Margin - plot.tick))
+
+    plot.save('fig04.l.pdf')
+
+    storylines.combine('fig04.r.pdf', ['fig04%s' % a for a in labels],
+        columns=3)
+
+    storylines.combine('fig04.pdf', ['fig04.l', 'fig04.r'], align=0.5)
