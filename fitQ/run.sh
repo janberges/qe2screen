@@ -22,6 +22,6 @@ mpirun pw.x -nk $nk < nscf.in | tee nscf.out
 mpirun -n $nk epw.x -nk $nk < epw.in | tee epw.out
 
 mpirun pw.x -nk $nk < scf.in | tee scf.out
-mpirun ph.x -nk $nk < ph0.in | tee ph0.out
+mpirun ph.x -nk $nk < phref.in | tee phref.out
 
 python3 fitQ.py

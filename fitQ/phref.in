@@ -3,8 +3,8 @@ TaS2
     prefix = 'TaS2'
     outdir = 'work'
 
-    fildyn = 'ref'
-    fildvscf = 'dvscf'
+    fildyn = 'dynref'
+    fildvscf = 'dvscfref'
 
     tr2_ph = 1e-12 ! 1e-21
 

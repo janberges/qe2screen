@@ -19,8 +19,8 @@ nbnd = [1, 5, 13, 17, 22]
 
 q, x, corners = elphmod.bravais.path('GMKG', ibrav=4)
 
-q0, x0, w0 = elphmod.el.read_bands('../fig05/ref.freq')
-qi, xi, wi = elphmod.el.read_bands('../fig05/phband.freq')
+q0, x0, w0 = elphmod.el.read_bands('ref.freq')
+qi, xi, wi = elphmod.el.read_bands('phband.freq')
 
 w0 *= 1e3 * elphmod.misc.cmm1
 

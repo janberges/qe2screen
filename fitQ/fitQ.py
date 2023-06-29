@@ -22,7 +22,7 @@ info('Set up q-point path')
 q, x, special = elphmod.bravais.path([(0.0, 0.5 / d, 0.0) for d in [6e3, 2, 1]],
     ibrav=4, N=198)
 
-q0, x0, w0 = elphmod.el.read_bands('ref.freq')
+q0, x0, w0 = elphmod.el.read_bands('dynref.freq')
 
 q0 = 2 * np.pi * np.dot(q0, ph.a.T) / np.linalg.norm(ph.a[0])
 x0 += x[-1] - x0[-1]
@@ -34,7 +34,7 @@ sqrtM = np.sqrt(np.repeat(ph.M, 3))
 D0 = np.empty((len(q0), ph.size, ph.size), dtype=complex)
 
 for iq in range(len(q0)):
-    D0[iq] = elphmod.ph.read_flfrc('ref%d' % (iq + 1))[0][1][0]
+    D0[iq] = elphmod.ph.read_flfrc('dynref%d' % (iq + 1))[0][1][0]
 
 D0 /= sqrtM[np.newaxis, np.newaxis, :]
 D0 /= sqrtM[np.newaxis, :, np.newaxis]
@@ -43,7 +43,7 @@ g0 = np.empty((len(q0), ph.size), dtype=complex)
 
 iq = 0
 
-with open('ph0.out') as lines:
+with open('phref.out') as lines:
     for line in lines:
         if 'Printing the electron-phonon matrix elements' in line:
             next(lines)

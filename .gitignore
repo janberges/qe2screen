@@ -19,7 +19,6 @@
 decay.*
 dyn*
 input_tmp.in
-ref*
 save
 venv
 work

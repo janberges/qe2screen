@@ -265,7 +265,7 @@ if comm.rank == 0:
 
 q, x, corners = elphmod.bravais.path('GMKG', ibrav=4, N=198)
 
-q0, x0, w0 = elphmod.el.read_bands('../fig05/ref.freq')
+q0, x0, w0 = elphmod.el.read_bands('ref.freq')
 
 w0 *= 1e3 * elphmod.misc.cmm1
 
