@@ -80,7 +80,7 @@ for l, label in enumerate(['r', 'cr']):
 
         if i == len(nbnd) - 1:
             plot.node(x[-1], (plot.ymax + plot.ymin) / 2,
-                r'via $\varPi^{\text{%s}}$' % ['00', 'p0'][l],
+                r'Via $\varPi^{\text{%s}}$' % ['00', 'p0'][l],
                 below=True, rotate=90)
         else:
             plot.right = margin

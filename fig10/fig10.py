@@ -126,10 +126,10 @@ if comm.rank == 0:
     inset.lpos = 'rb'
     inset.lopt = 'above left'
 
-    inset.line(color=colors[1][0], label=r'long\rlap.',
+    inset.line(color=colors[1][0], label=r'Long.',
         line_width='%gcm' % (factor * thickness))
 
-    inset.line(color=colors[1][1], label=r'trans\rlap.',
+    inset.line(color=colors[1][1], label=r'Trans.',
         line_width='%gcm' % (factor * thickness))
 
     inset.label = None
@@ -299,8 +299,8 @@ if comm.rank == 0:
         )
 
     plot.line(y=0.0, color='lightgray')
-    plot.line(color=orange, label='w/o SC', line_width='%gcm' % thickness)
-    plot.line(color=mauve, label='with SC', line_width='%gcm' % thickness)
+    plot.line(line_width='%gcm' % thickness, color=orange, label='Without SC')
+    plot.line(line_width='%gcm' % thickness, color=mauve, label='With SC')
 
     plot.width = plot.double / 3
     plot.height = plot.single

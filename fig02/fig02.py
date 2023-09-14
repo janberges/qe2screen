@@ -578,7 +578,7 @@ if comm.rank == 0:
     iw = np.argmin(abs(Abw[iw:] - Abw[iw] / 2)) + iw
 
     plot.node(Abw[iw] / Ry2meV, w[iw] * Ry2meV,
-        r'$q = \frac12 k_{\text F} = \frac12 \mathrm X$', above_right=True)
+        r'$q = \frac12 k_{\text F} = \frac14 \mathrm X$', above_right=True)
 
     plot.node(0.0, plot.ymax, '(d)', below_right=True)
 

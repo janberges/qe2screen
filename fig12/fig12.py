@@ -62,7 +62,7 @@ def new_plot(label, **kwargs):
 
 plot = new_plot(label='a', xlabels=False, left=Margin, top=Margin / 2,
     ylabel=r'$\mathcal G^{(1, 2)}$ (eV\textsuperscript3)',
-    title=r'no $\mathcal L$', ymin=-0.0017, ymax=0.0027)
+    title=r'No $\mathcal L$', ymin=-0.0017, ymax=0.0027)
 
 plot.line(x0, eig0[0], color='lightgray')
 plot.line(y=0.0, color='lightgray')

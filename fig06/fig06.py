@@ -62,17 +62,17 @@ plot.axes()
 
 for nu in range(len(wr)):
     plot.line(xr, wr[nu], thick=True, color=mauve, cut=True,
-        label='no correction')
+        label='No correction')
 
 for nu in range(len(w1)):
     plot.line(x1, w1[nu], thick=True, color=darkorange, cut=True,
         dash_pattern='on 0.8mm off 0.8mm', line_cap='butt', line_join='miter',
-        label=r'correction I')
+        label='Correction I')
 
 for nu in range(len(w2)):
     plot.line(x2[1:-1], w2[nu, 1:-1], thick=True, color=orange, cut=True,
         dash_pattern='on 0.5mm off 0.2mm', line_cap='butt', line_join='miter',
-        label=r'correction II')
+        label='Correction II')
 
 for nu in range(len(w0)):
     plot.line(x0, w0[nu], cut=True,

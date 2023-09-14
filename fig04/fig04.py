@@ -136,7 +136,7 @@ for i, n in enumerate(nbnd):
     else:
         plot.line(label='*next*', color='gray',
             mark='*', mark_size='0.6pt', only_marks=True)
-        plot.line(label=r'no\,$\mathcal L$', color='gray')
+        plot.line(label=r'No\,$\mathcal L$', color='gray')
 
         plot.line(label='*next*', color=orange,
             mark='+', mark_size='0.6pt', only_marks=True)

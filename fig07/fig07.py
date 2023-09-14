@@ -71,11 +71,11 @@ qz /= 15
 xz /= 15
 
 for n, (label, zoom, title) in enumerate([
-        ('0r', 'zr', r'via $\varPi^{\text{00}}$'),
-        ('0cr', 'zcr', r'via $\varPi^{\text{p0}}$'),
-        ('nol0cr', 'nolzcr', r'via $\varPi^{\text{p0}}$ '
+        ('0r', 'zr', r'Via $\varPi^{\text{00}}$'),
+        ('0cr', 'zcr', r'Via $\varPi^{\text{p0}}$'),
+        ('nol0cr', 'nolzcr', r'Via $\varPi^{\text{p0}}$ '
             r'\smash{(no\,$\mathcal L$)}'),
-        ('dr', None, r'via $\varPi^{\text{00}}$ \smash{(doped)}')]):
+        ('dr', None, r'Via $\varPi^{\text{00}}$ \smash{(doped)}')]):
 
     image = elphmod.plot.color(A[label], minimum=0, maximum=255,
         cmap=cmap if label == '0cr' else cmap_positive)

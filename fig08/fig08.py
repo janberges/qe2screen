@@ -196,11 +196,11 @@ for l, label in enumerate('bd'):
     else:
         for nu in range(len(w1)):
             plot.line(x1, w1[nu], thick=True, color=orange, cut=True,
-                label=r'via $\varPi^{\text{00}}$')
+                label=r'Via $\varPi^{\text{00}}$')
 
         for nu in range(len(w2)):
             plot.line(x2, w2[nu], thick=True, color=mauve, cut=True,
-                label=r'via $\varPi^{\text{p0}}$')
+                label=r'Via $\varPi^{\text{p0}}$')
 
         for nu in range(len(w0)):
             plot.line(x0, w0[nu], cut=True,
