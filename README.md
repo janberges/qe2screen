@@ -1,10 +1,10 @@
-# To screen, or not to screen
+# qe2screen
 
 This repository contains the source code and data associated with the paper:
 
 - Jan Berges, Nina Girotto, Tim Wehling, Nicola Marzari, and Samuel Poncé,
-  *Phonon self-energy corrections: To screen, or not to screen*,
-  [arXiv:2212.11806](https://arxiv.org/abs/2212.11806) (2022).
+  *Phonon Self-Energy Corrections: To Screen, or Not to Screen*,
+  [arXiv:2212.11806](https://arxiv.org/abs/2212.11806)
 
 ## Quantum ESPRESSO patch
 
@@ -135,7 +135,7 @@ ESPRESSO and the above Python environment are installed, simply do `./run.sh`.
 
 More precisely, we first calculate (bare) dynamical matrices and electron-phonon
 matrix elements both on a coarse q mesh and for selected q points along a path.
-Then we Fourier-interpolate the former, minimizing deviations from the latter.
+Then we Fourier interpolate the former, minimizing deviations from the latter.
 Here, the free parameters are the independent elements of the quadrupole tensors
 Q and the range-separation parameter L entering the formulas for the long-range
 components that are subtracted and added before and after interpolation. First,

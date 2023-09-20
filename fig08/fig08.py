@@ -34,7 +34,10 @@ k, x, corners = elphmod.bravais.path([n * K / 4 for n in [5, 4, 2, 1]],
 #
 #w2, u = np.linalg.eigh(ph.D(0, np.pi, 0))
 #
-#for infile, outfile in ('MoS2.epmatwp', 'd0.dat'), ('MoS2.epmatwpc', 'dp.dat'):
+#for infile, outfile in [
+#        ('MoS2.epmatwp', 'coupling0.dat'),
+#        ('MoS2.epmatwpc', 'couplingp.dat')]:
+#
 #    elph = elphmod.elph.Model(infile, 'MoS2.wigner', el, ph)
 #
 #    g = [abs(np.einsum('xmn,xv->vmn', elph.g(0, np.pi, 0, k1, k2, k3,
@@ -50,8 +53,10 @@ k0, x0, (g0,) = elphmod.el.read_bands('coupling0.dat')
 kp, xp, (gp,) = elphmod.el.read_bands('couplingp.dat')
 
 for l, (label, ylabel, ymin, ymax, ystep) in enumerate([
-        ('a', r'Electron energy (eV)', -0.17, 0.37, 0.1),
-        ('c', r'El.-ph.\@ coupling (eV$^{3/2}$)', 0.0, 0.033, 0.01)]):
+        ('a', r'Electron energy (eV)',
+            -0.17, 0.37, 0.1),
+        ('c', r'El.-ph.\@ coupling (eV\textsuperscript{3/2})',
+            0.0, 0.033, 0.01)]):
 
     if comm.rank != 0:
         continue
