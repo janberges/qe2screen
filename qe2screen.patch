@@ -5116,7 +5116,7 @@ index 570848ccd..48b7f311c 100644
            !
            ! rotate epmat in the cartesian representation for this q in the star
 diff --git a/EPW/src/selfen.f90 b/EPW/src/selfen.f90
-index aaea04cd8..03ef906ba 100644
+index aaea04cd8..c270beedd 100644
 --- a/EPW/src/selfen.f90
 +++ b/EPW/src/selfen.f90
 @@ -945,6 +945,664 @@
@@ -5292,7 +5292,7 @@ index aaea04cd8..03ef906ba 100644
 +    USE klist,      ONLY : degauss, ngauss
 +    USE matrix_inversion, ONLY: invmat
 +    USE modes,      ONLY : nmodes
-+    USE mp,         ONLY : mp_barrier, mp_sum
++    USE mp,         ONLY : mp_sum
 +    USE mp_global,  ONLY : inter_pool_comm
 +    USE rigid,      ONLY : cdiagh2
 +    !
@@ -5532,7 +5532,7 @@ index aaea04cd8..03ef906ba 100644
 +      CALL spectrum(d_renorm, wfr1(:, iq, itemp), ufr1(:, :, itemp))
 +      !
 +      d_renorm = d2 + prefactor * piff(:, :, itemp)
-+      CALL spectrum(d_renorm, wfr2(:, iq:, itemp), ufr2(:, :, itemp))
++      CALL spectrum(d_renorm, wfr2(:, iq, itemp), ufr2(:, :, itemp))
 +      !
 +      IF (specfun_ph) THEN
 +        DO iw = 1, nw_specfun
